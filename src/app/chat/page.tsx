@@ -22,6 +22,7 @@ function ChatContainer() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [agentStatus, setAgentStatus] = useState<string | undefined>(undefined);
 
   // 1. Fetch conversations list for sidebar
   const fetchConversations = useCallback(async () => {
@@ -87,7 +88,7 @@ function ChatContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPrompt]);
 
-  // 3. Send Message Action connected to POST /api/chat
+  // 3. Send Message Action connected to POST /api/chat with streaming support
   const handleSendMessage = async (overrideText?: string) => {
     const textToSend = (overrideText ?? inputValue).trim();
     if (!textToSend || isLoading) return;
@@ -105,6 +106,7 @@ function ChatContainer() {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
+    setAgentStatus('Thinking...');
 
     try {
       const response = await fetch('/api/chat', {
@@ -113,32 +115,145 @@ function ChatContainer() {
         body: JSON.stringify({
           message: textToSend,
           conversationId: activeConversationId || undefined,
+          stream: true,
         }),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
 
-      if (!response.ok || data.error) {
-        throw new Error(data.error || data.details || 'Failed to receive response from AI agent.');
+      if (contentType.includes('text/event-stream') && response.body) {
+        const assistantId = `ast_${Date.now()}`;
+        let hasAppendedAssistant = false;
+        let accumulatedText = '';
+        let executedToolCalls: Array<{ name: string; arguments?: any }> = [];
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) continue;
+            const jsonStr = trimmed.replace(/^data:\s*/, '');
+            try {
+              const event = JSON.parse(jsonStr);
+
+              if (event.type === 'status' && event.status) {
+                setAgentStatus(event.status);
+              } else if (event.type === 'tool_call' && event.tool) {
+                if (!executedToolCalls.some((t) => t.name === event.tool)) {
+                  executedToolCalls.push({ name: event.tool });
+                }
+              } else if (event.type === 'chunk' && event.chunk) {
+                accumulatedText += event.chunk;
+
+                if (!hasAppendedAssistant) {
+                  hasAppendedAssistant = true;
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: assistantId,
+                      role: 'assistant',
+                      content: accumulatedText,
+                      createdAt: new Date().toISOString(),
+                      toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : undefined,
+                      isStreaming: true,
+                    },
+                  ]);
+                } else {
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? {
+                            ...m,
+                            content: accumulatedText,
+                            toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : m.toolCalls,
+                          }
+                        : m
+                    )
+                  );
+                }
+              } else if (event.type === 'done') {
+                if (event.conversationId && event.conversationId !== activeConversationId) {
+                  setActiveConversationId(event.conversationId);
+                  fetchConversations();
+                }
+
+                const finalContent = event.message || accumulatedText;
+                const finalTools = event.toolCalls || executedToolCalls;
+                const finalSources = event.sources || [];
+
+                if (!hasAppendedAssistant) {
+                  hasAppendedAssistant = true;
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: assistantId,
+                      role: 'assistant',
+                      content: finalContent,
+                      createdAt: new Date().toISOString(),
+                      toolCalls: finalTools.length > 0 ? finalTools : undefined,
+                      sources: finalSources.length > 0 ? finalSources : undefined,
+                      isStreaming: false,
+                    },
+                  ]);
+                } else {
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? {
+                            ...m,
+                            content: finalContent,
+                            toolCalls: finalTools.length > 0 ? finalTools : undefined,
+                            sources: finalSources.length > 0 ? finalSources : undefined,
+                            isStreaming: false,
+                          }
+                        : m
+                    )
+                  );
+                }
+              } else if (event.type === 'error') {
+                throw new Error(event.error || 'An error occurred during response streaming.');
+              }
+            } catch (parseErr) {
+              if (parseErr instanceof Error && parseErr.message.includes('An error occurred')) {
+                throw parseErr;
+              }
+            }
+          }
+        }
+      } else {
+        // Fallback for standard non-streaming JSON responses
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || data.details || 'Failed to receive response from AI agent.');
+        }
+
+        if (data.conversationId && data.conversationId !== activeConversationId) {
+          setActiveConversationId(data.conversationId);
+          fetchConversations();
+        }
+
+        const assistantMessage: MessageItem = {
+          id: `ast_${Date.now()}`,
+          role: 'assistant',
+          content: data.message,
+          createdAt: new Date().toISOString(),
+          toolCalls: data.toolCalls,
+          sources: data.sources,
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
       }
-
-      // If a new conversation was initialized on the server, update active ID
-      if (data.conversationId && data.conversationId !== activeConversationId) {
-        setActiveConversationId(data.conversationId);
-        // Refresh conversations list in sidebar so the new session is listed
-        fetchConversations();
-      }
-
-      // Append assistant's real response to the message history
-      const assistantMessage: MessageItem = {
-        id: `ast_${Date.now()}`,
-        role: 'assistant',
-        content: data.message,
-        createdAt: new Date().toISOString(),
-        toolCalls: data.toolCalls,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
       console.error('[Chat Error]:', err);
       setError(
@@ -146,6 +261,7 @@ function ChatContainer() {
       );
     } finally {
       setIsLoading(false);
+      setAgentStatus(undefined);
     }
   };
 
@@ -216,6 +332,7 @@ function ChatContainer() {
         onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
         conversationTitle={activeTitle}
         onResetConversation={handleNewConversation}
+        agentStatus={agentStatus}
       />
     </div>
   );

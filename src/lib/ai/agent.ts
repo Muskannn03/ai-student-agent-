@@ -196,7 +196,7 @@ export async function runStudentAgent(input: StudentAgentInput): Promise<Student
       ragRetrievedChunks.length > 0 && !needsOtherTools
         ? undefined
         : ragRetrievedChunks.length > 0
-        ? allTools.filter((t) => t.function.name !== 'search_student_notes')
+        ? allTools.filter((t: any) => t.function?.name !== 'search_student_notes')
         : allTools;
     const toolCallsExecuted: ToolCallExecutionSummary[] = [];
 

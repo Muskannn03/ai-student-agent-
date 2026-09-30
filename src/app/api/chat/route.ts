@@ -49,10 +49,18 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 1. Fetch messages for a specific conversation
+    const user = await prisma.user.findFirst();
+    if (!user) {
+      return NextResponse.json({ conversations: [] });
+    }
+
+    // 1. Fetch messages for a specific conversation (scoped to current user)
     if (conversationId) {
-      const session = await prisma.chatSession.findUnique({
-        where: { id: conversationId },
+      const session = await prisma.chatSession.findFirst({
+        where: {
+          id: conversationId,
+          userId: user.id,
+        },
         include: {
           messages: {
             orderBy: { createdAt: 'asc' },
@@ -80,11 +88,6 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Fetch list of conversations for the student
-    const user = await prisma.user.findFirst();
-    if (!user) {
-      return NextResponse.json({ conversations: [] });
-    }
-
     const sessions = await prisma.chatSession.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: 'desc' },
@@ -132,9 +135,15 @@ export async function DELETE(req: NextRequest) {
 
     const isDbConnected = await testDatabaseConnection();
     if (isDbConnected) {
-      await prisma.chatSession.delete({
-        where: { id: conversationId },
-      });
+      const user = await prisma.user.findFirst();
+      if (user) {
+        await prisma.chatSession.deleteMany({
+          where: {
+            id: conversationId,
+            userId: user.id,
+          },
+        });
+      }
     }
 
     return NextResponse.json({ success: true, conversationId });
@@ -239,18 +248,25 @@ export async function POST(req: NextRequest) {
           };
         }
 
-        // Find or create ChatSession (Conversation) in PostgreSQL
+        // Find or create ChatSession (Conversation) in PostgreSQL (strictly scoped to user)
         let session = null;
         if (conversationIdParam) {
-          session = await prisma.chatSession.findUnique({
-            where: { id: conversationIdParam },
+          session = await prisma.chatSession.findFirst({
+            where: {
+              id: conversationIdParam,
+              userId: user.id,
+            },
             include: {
               messages: {
-                orderBy: { createdAt: 'asc' },
-                take: 20, // last 20 messages for context window
+                orderBy: { createdAt: 'desc' },
+                take: 20, // Bounded context window: most recent 20 messages
               },
             },
           });
+
+          if (session && session.messages) {
+            session.messages.reverse(); // Restore chronological order: oldest to newest
+          }
         }
 
         if (!session) {
@@ -290,7 +306,89 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Invoke Autonomous AI Academic Agent with Intent Analysis & Tool-Calling Loop
+    // 3. Handle Streaming Response via Server-Sent Events (SSE) when requested
+    if (body.stream === true) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            const agentResult = await runAcademicAgent({
+              userMessage,
+              history,
+              context: {
+                userId: studentProfileContext.userId || 'default_student_user',
+                studentName: studentProfileContext.name,
+                userEmail: studentProfileContext.email,
+                course: studentProfileContext.course,
+                semester: studentProfileContext.semester,
+                college: studentProfileContext.college,
+              },
+              onProgress: (event) => {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+              },
+            });
+
+            // Persist AI Response to PostgreSQL
+            if (isDbConnected && activeConversationId) {
+              try {
+                await prisma.chatMessage.create({
+                  data: {
+                    chatSessionId: activeConversationId,
+                    role: MessageRole.ASSISTANT,
+                    content: agentResult.message,
+                  },
+                });
+
+                // Touch chatSession updatedAt
+                await prisma.chatSession.update({
+                  where: { id: activeConversationId },
+                  data: { updatedAt: new Date() },
+                });
+              } catch (dbSaveError) {
+                console.error('[Database Error saving assistant response]:', dbSaveError);
+              }
+            }
+
+            // Emit final done event with full structured payload
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: 'done',
+                  message: agentResult.message,
+                  conversationId: activeConversationId,
+                  toolCalls: agentResult.toolCallsExecuted || [],
+                  isSimulated: agentResult.isSimulated,
+                  sources: agentResult.sources || [],
+                })}\n\n`
+              )
+            );
+            controller.close();
+          } catch (streamError: any) {
+            console.error('[API /api/chat Stream Error]:', streamError);
+            const rawMsg = streamError instanceof Error ? streamError.message : 'Error in AI generation';
+            const isOllamaDown = rawMsg.includes('Ollama is not running');
+            const cleanError = isOllamaDown
+              ? 'Ollama is not running. Please start Ollama and try again.'
+              : 'An unexpected error occurred while communicating with the AI agent.';
+
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: 'error', error: cleanError })}\n\n`)
+            );
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'Connection': 'keep-alive',
+        },
+      });
+    }
+
+    // 4. Standard Non-Streaming JSON Response (Preserves 100% Backward Compatibility)
     const agentResult = await runAcademicAgent({
       userMessage,
       history,
@@ -304,7 +402,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 4. Persist AI Response to PostgreSQL
+    // Persist AI Response to PostgreSQL
     if (isDbConnected && activeConversationId) {
       try {
         await prisma.chatMessage.create({
@@ -325,26 +423,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Return standardized response format
+    // Return standardized response format
     return NextResponse.json({
       message: agentResult.message,
       conversationId: activeConversationId,
       toolCalls: agentResult.toolCallsExecuted || [],
       isSimulated: agentResult.isSimulated,
+      sources: agentResult.sources || [],
     });
   } catch (error: unknown) {
     console.error('[API /api/chat Failure]:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
 
-    const isOllamaDown = errorMessage.includes('Ollama is not running');
+    const isOllamaDown =
+      errorMessage.includes('Ollama is not running') ||
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('fetch failed');
+
     const userFacingError = isOllamaDown
       ? 'Ollama is not running. Please start Ollama and try again.'
-      : errorMessage;
+      : 'An unexpected error occurred while communicating with the AI agent.';
 
     return NextResponse.json(
       {
         error: userFacingError,
-        details: errorMessage,
       },
       { status: isOllamaDown ? 503 : 500 }
     );

@@ -119,6 +119,8 @@ export class OllamaProvider implements AIProvider {
     const timeoutMs = options.timeoutMs || this.defaultTimeoutMs;
 
     try {
+      const isStreamingRequested = typeof options.onChunk === 'function' && (!options.tools || options.tools.length === 0 || options.toolChoice === 'none');
+
       const payload: Record<string, any> = {
         model: modelToUse,
         messages: options.messages.map((m) => {
@@ -131,7 +133,7 @@ export class OllamaProvider implements AIProvider {
           }
           return item;
         }),
-        stream: false,
+        stream: isStreamingRequested,
         options: {
           temperature: options.temperature ?? 0.5,
           num_predict: options.maxTokens ?? 1800,
@@ -142,7 +144,7 @@ export class OllamaProvider implements AIProvider {
         payload.tools = options.tools;
       }
 
-      console.log(`[OllamaProvider] Dispatching chat request to ${endpoint} (model: ${modelToUse})...`);
+      console.log(`[OllamaProvider] Dispatching chat request to ${endpoint} (model: ${modelToUse}, stream: ${isStreamingRequested})...`);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -154,6 +156,64 @@ export class OllamaProvider implements AIProvider {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Ollama chat returned status ${response.status}: ${errorText}`);
+      }
+
+      if (isStreamingRequested && response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let assistantContent = '';
+        let tokensUsed = 0;
+        let responseModel = modelToUse;
+        let buffer = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            try {
+              const data = JSON.parse(trimmed);
+              if (data.message?.content) {
+                assistantContent += data.message.content;
+                options.onChunk?.(data.message.content);
+              }
+              if (data.done) {
+                tokensUsed = (data.prompt_eval_count || 0) + (data.eval_count || 0);
+                if (data.model) responseModel = data.model;
+              }
+            } catch {
+              // skip partial json in stream
+            }
+          }
+        }
+
+        if (buffer.trim()) {
+          try {
+            const data = JSON.parse(buffer.trim());
+            if (data.message?.content) {
+              assistantContent += data.message.content;
+              options.onChunk?.(data.message.content);
+            }
+            if (data.done) {
+              tokensUsed = (data.prompt_eval_count || 0) + (data.eval_count || 0);
+              if (data.model) responseModel = data.model;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        return {
+          message: assistantContent,
+          tokensUsed,
+          model: responseModel,
+        };
       }
 
       const data = await response.json();

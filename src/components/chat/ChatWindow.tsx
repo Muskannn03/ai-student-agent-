@@ -8,9 +8,9 @@ import {
   Sparkles,
   BookOpen,
   Calendar,
-  Code2,
   ListTodo,
-  AlertCircle,
+  User,
+  Clock,
 } from 'lucide-react';
 import { MessageBubble, MessageItem } from './MessageBubble';
 import { LoadingIndicator } from './LoadingIndicator';
@@ -29,32 +29,39 @@ interface ChatWindowProps {
   onOpenMobileSidebar?: () => void;
   conversationTitle?: string;
   onResetConversation?: () => void;
+  agentStatus?: string;
 }
 
 const STARTER_PROMPTS = [
   {
     icon: BookOpen,
-    title: 'Explain Complex Concept',
-    description: 'Compare Dijkstra vs. Bellman-Ford shortest path algorithms with code examples',
-    prompt: 'Can you compare Dijkstra vs Bellman-Ford shortest path algorithms, explaining their time complexity and handling of negative weights?',
-  },
-  {
-    icon: Calendar,
-    title: 'Create Study Schedule',
-    description: 'Generate a 3-day exam revision plan for Database Systems & SQL normalization',
-    prompt: 'Help me build an intensive 3-day exam study schedule for Database Systems covering BCNF, 3NF, indexing, and ACID transactions.',
-  },
-  {
-    icon: Code2,
-    title: 'Debug & Code Assistance',
-    description: 'Diagnose runtime bugs or PyTorch tensor shape mismatch issues',
-    prompt: 'I am getting a runtime error with a PyTorch tensor mismatch during forward pass. How should I inspect and reshape my tensors?',
+    title: 'Explain Uploaded Notes',
+    description: 'Ask questions grounded in your uploaded PDF lecture slides & course notes',
+    prompt: 'Explain my uploaded notes',
   },
   {
     icon: ListTodo,
-    title: 'Break Down Assignment',
-    description: 'Divide a large semester project into actionable milestones',
-    prompt: 'Help me break down my Software Engineering term project into step-by-step weekly sprints and manageable milestones.',
+    title: 'View Assignments',
+    description: 'Check pending, completed, and overdue coursework assignments in the database',
+    prompt: 'What assignments do I have?',
+  },
+  {
+    icon: Clock,
+    title: 'Upcoming Deadlines',
+    description: 'See coursework due this week or approaching submission dates',
+    prompt: 'What deadlines are coming up?',
+  },
+  {
+    icon: User,
+    title: 'Student Profile',
+    description: 'Check enrolled degree, department, semester, and registered technical skills',
+    prompt: 'Tell me about my academic profile',
+  },
+  {
+    icon: Sparkles,
+    title: 'Create Study Plan',
+    description: 'Generate an intelligent 7-day revision schedule tailored to your deadlines',
+    prompt: 'Create a 7-day study plan',
   },
 ];
 
@@ -69,6 +76,7 @@ export function ChatWindow({
   onOpenMobileSidebar,
   conversationTitle = 'New Study Session',
   onResetConversation,
+  agentStatus,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -156,21 +164,21 @@ export function ChatWindow({
         className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-6 scroll-smooth"
       >
         {messages.length === 0 ? (
-          /* Empty State: ChatGPT-style Student Hero */
-          <div className="flex flex-col items-center justify-center min-h-[70%] max-w-2xl mx-auto py-8 text-center animate-in fade-in duration-300">
+          /* Empty State: Student Agent Hero */
+          <div className="flex flex-col items-center justify-center min-h-[70%] max-w-3xl mx-auto py-8 text-center animate-in fade-in duration-300">
             <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-600/25 mb-4">
               <Sparkles className="h-7 w-7" />
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              How can I help your studies today?
+              Hi! I&apos;m your AI Student Agent.
             </h2>
-            <p className="text-sm text-slate-400 mt-2 max-w-md">
-              Ask questions on coursework, generate personalized study schedules, debug code, or prepare for upcoming exams.
+            <p className="text-sm text-slate-400 mt-2 max-w-lg">
+              Your academic companion for course notes, assignments, upcoming deadlines, student profile details, and personalized study schedules.
             </p>
 
             {/* Quick Starter Suggestion Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-8 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full mt-8 text-left">
               {STARTER_PROMPTS.map((starter, index) => {
                 const Icon = starter.icon;
                 return (
@@ -205,6 +213,7 @@ export function ChatWindow({
             {/* Pulsing Loading / Typing Indicator with Context-Aware Tool Status */}
             {isLoading && (
               <LoadingIndicator
+                status={agentStatus}
                 queryHint={
                   messages.filter((m) => m.role === 'user').slice(-1)[0]?.content
                 }

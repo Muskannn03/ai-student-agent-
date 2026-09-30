@@ -11,6 +11,8 @@ export interface MessageItem {
   content: string;
   createdAt?: string;
   toolCalls?: Array<{ name: string; arguments?: any }>;
+  sources?: Array<{ documentId?: string; documentName: string; pageNumber?: number | null; chunkIndex?: number }>;
+  isStreaming?: boolean;
 }
 
 interface MessageBubbleProps {
@@ -46,13 +48,47 @@ function extractSources(content: string): SourceReference[] {
     }
   }
 
+  // Match 📚 **Sources** list format:
+  // 📚 **Sources**
+  // - `CS301_Timsort_Notes.pdf`
+  const bookRegex = /📚\s*(?:\*\*)?Sources(?:\*\*)?[:\s]*\n([\s\S]+?)(?:\n\n[^\-\•\*]|$)/gi;
+  let bookMatch;
+  while ((bookMatch = bookRegex.exec(content)) !== null) {
+    const listBlock = bookMatch[1];
+    const itemRegex = /^[-\•\*]\s*`?([^`\n\r]+?)`?(?:\s*[—–-]\s*(?:Page|Chunk)\s*#?(\d+))?$/gm;
+    let itemMatch;
+    while ((itemMatch = itemRegex.exec(listBlock)) !== null) {
+      const title = itemMatch[1].trim();
+      const chunk = itemMatch[2] || undefined;
+      if (title && !sources.some((s) => s.title === title)) {
+        sources.push({ title, chunk });
+      }
+    }
+  }
+
   return sources;
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === 'user';
-  const sources = !isUser ? extractSources(message.content) : [];
+  
+  // Consolidate both structured API sources and text-parsed sources with deduplication
+  const extracted = !isUser ? extractSources(message.content) : [];
+  const structured = !isUser && message.sources
+    ? message.sources.map((s) => ({
+        title: s.documentName,
+        chunk: s.chunkIndex !== undefined ? String(s.chunkIndex) : undefined,
+      }))
+    : [];
+
+  const sourcesMap = new Map<string, SourceReference>();
+  for (const s of [...structured, ...extracted]) {
+    if (s.title && !sourcesMap.has(s.title)) {
+      sourcesMap.set(s.title, s);
+    }
+  }
+  const sources = Array.from(sourcesMap.values());
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
@@ -101,24 +137,30 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 AI Student Assistant
               </span>
               {message.toolCalls &&
-                message.toolCalls.map((t, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-300 border border-indigo-500/30"
-                  >
-                    {t.name === 'searchNotes'
-                      ? 'Using Search Notes'
+                message.toolCalls.map((t, idx) => {
+                  const label =
+                    t.name === 'searchNotes'
+                      ? 'Searched your notes'
                       : t.name === 'getAssignments'
-                      ? 'Checking Assignments'
+                      ? 'Checked assignments'
                       : t.name === 'getUpcomingDeadlines'
-                      ? 'Checking Deadlines'
+                      ? 'Checked upcoming deadlines'
                       : t.name === 'createStudyPlan'
-                      ? 'Creating Study Plan'
+                      ? 'Created study plan'
                       : t.name === 'getStudentProfile'
-                      ? 'Checking Student Profile'
-                      : t.name}
-                  </span>
-                ))}
+                      ? 'Loaded student profile'
+                      : t.name;
+
+                  return (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 border border-emerald-500/25 shadow-sm"
+                    >
+                      <Check className="h-3 w-3 text-emerald-400 shrink-0" />
+                      <span>{label}</span>
+                    </span>
+                  );
+                })}
             </div>
             <span className="text-[10px] text-slate-500 font-mono shrink-0">{formattedTime}</span>
           </div>
@@ -171,6 +213,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             >
               {message.content}
             </ReactMarkdown>
+            {message.isStreaming && (
+              <span className="inline-block w-1.5 h-3.5 ml-1 bg-indigo-400 animate-pulse align-middle rounded-sm" />
+            )}
           </div>
         )}
 

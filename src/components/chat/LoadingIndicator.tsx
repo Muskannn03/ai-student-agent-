@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bot, Sparkles, Search, CheckSquare, Calendar, Compass } from 'lucide-react';
+import { Bot, Sparkles, Search, CheckSquare, Calendar, User, BookOpen } from 'lucide-react';
 
 interface LoadingIndicatorProps {
   status?: string;
@@ -10,31 +10,42 @@ interface LoadingIndicatorProps {
 
 const DEFAULT_STATUS_STEPS = [
   { text: 'Thinking...', icon: Sparkles },
-  { text: 'Using Search Notes...', icon: Search },
-  { text: 'Checking Assignments...', icon: CheckSquare },
-  { text: 'Creating Study Plan...', icon: Calendar },
+  { text: 'Searching your notes...', icon: Search },
+  { text: 'Checking your assignments...', icon: CheckSquare },
+  { text: 'Building your study plan...', icon: Calendar },
 ];
+
+function getIconForStatus(statusText: string) {
+  const lower = statusText.toLowerCase();
+  if (lower.includes('note') || lower.includes('document')) return Search;
+  if (lower.includes('assignment')) return CheckSquare;
+  if (lower.includes('deadline')) return Calendar;
+  if (lower.includes('profile')) return User;
+  if (lower.includes('study plan') || lower.includes('schedule')) return Sparkles;
+  if (lower.includes('synthesizing')) return Sparkles;
+  return Sparkles;
+}
 
 export function LoadingIndicator({ status, queryHint }: LoadingIndicatorProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  // If queryHint is provided, determine an intelligent starting indicator
+  // If queryHint is provided and no explicit status, determine an intelligent starting indicator
   useEffect(() => {
-    if (queryHint) {
+    if (!status && queryHint) {
       const lower = queryHint.toLowerCase();
       if (lower.includes('note') || lower.includes('chp') || lower.includes('document')) {
-        setCurrentStepIndex(1); // Using Search Notes...
+        setCurrentStepIndex(1); // Searching your notes...
       } else if (lower.includes('assignment') || lower.includes('deadline') || lower.includes('due') || lower.includes('homework')) {
-        setCurrentStepIndex(2); // Checking Assignments...
+        setCurrentStepIndex(2); // Checking assignments...
       } else if (lower.includes('study plan') || lower.includes('schedule') || lower.includes('revision')) {
-        setCurrentStepIndex(3); // Creating Study Plan...
+        setCurrentStepIndex(3); // Building study plan...
       } else {
         setCurrentStepIndex(0); // Thinking...
       }
     }
-  }, [queryHint]);
+  }, [queryHint, status]);
 
-  // Subtle step progression while waiting for server response
+  // Subtle step progression while waiting if no explicit status is streamed
   useEffect(() => {
     if (status) return; // explicit status takes precedence
     const interval = setInterval(() => {
@@ -44,7 +55,7 @@ export function LoadingIndicator({ status, queryHint }: LoadingIndicatorProps) {
   }, [status]);
 
   const activeStatus = status || DEFAULT_STATUS_STEPS[currentStepIndex].text;
-  const ActiveIcon = DEFAULT_STATUS_STEPS[currentStepIndex]?.icon || Sparkles;
+  const ActiveIcon = status ? getIconForStatus(status) : (DEFAULT_STATUS_STEPS[currentStepIndex]?.icon || Sparkles);
 
   return (
     <div className="flex items-start gap-3.5 max-w-3xl animate-in fade-in duration-300">

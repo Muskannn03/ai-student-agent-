@@ -129,12 +129,6 @@ export async function retrieveRelevantChunks(
     });
 
     if (chunks.length === 0) {
-      // If user hasn't uploaded notes yet, check if there are any documents or use sample fallback
-      const docCount = await prisma.noteDocument.count({ where: { userId } });
-      if (docCount === 0) {
-        return getOfflineMockRetrieval(trimmedQuery, queryEmbedding, topK, minSimilarity);
-      }
-
       return {
         query: trimmedQuery,
         totalChunksSearched: 0,

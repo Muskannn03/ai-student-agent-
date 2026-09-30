@@ -1,12 +1,11 @@
 // ==========================================
-// AI Academic Agent - Core Types
-// Strongly typed contracts for tools, context, and execution
+// AI Academic Agent - Core Foundational Types
 // ==========================================
 
 export interface AgentContext {
   userId: string;
-  userEmail?: string;
   studentName?: string;
+  userEmail?: string;
   course?: string | null;
   semester?: number | null;
   college?: string | null;
@@ -24,11 +23,23 @@ export interface AgentTool<TInput = any, TOutput = any> {
 }
 
 // ------------------------------------------
-// Tool 1: searchNotes
+// Tool: searchNotes
 // ------------------------------------------
 export interface SearchNotesInput {
   query: string;
   courseId?: string;
+}
+
+export interface SearchNotesSource {
+  documentId: string;
+  documentName: string;
+  similarity: number;
+  chunkIndex?: number;
+}
+
+export interface SearchNotesResultItem {
+  content: string;
+  source: SearchNotesSource;
 }
 
 export interface SearchNotesChunk {
@@ -36,16 +47,18 @@ export interface SearchNotesChunk {
   documentTitle: string;
   content: string;
   similarity: number;
-  fileName?: string;
-  chunkIndex?: number;
 }
 
 export interface SearchNotesOutput {
+  query?: string;
+  hasResults: boolean;
+  totalChunks: number;
+  results: SearchNotesResultItem[];
   chunks: SearchNotesChunk[];
 }
 
 // ------------------------------------------
-// Tool 2: getAssignments
+// Tool: getAssignments
 // ------------------------------------------
 export interface GetAssignmentsInput {
   status?: 'pending' | 'completed' | 'overdue' | 'all';
@@ -54,12 +67,12 @@ export interface GetAssignmentsInput {
 export interface AssignmentItemSummary {
   id: string;
   title: string;
-  subject: string | null;
   description: string | null;
+  subject: string | null;
   dueDate: string;
-  status: string;
   priority: string;
-  isOverdue: boolean;
+  status: string;
+  overdue: boolean;
 }
 
 export interface GetAssignmentsOutput {
@@ -68,72 +81,111 @@ export interface GetAssignmentsOutput {
 }
 
 // ------------------------------------------
-// Tool 3: getUpcomingDeadlines
+// Tool: getUpcomingDeadlines
 // ------------------------------------------
 export interface GetUpcomingDeadlinesInput {
   days?: number;
 }
 
-export interface DeadlineItemSummary {
+export interface UpcomingDeadlineItem {
   id: string;
   title: string;
+  description: string | null;
   subject: string | null;
   dueDate: string;
-  daysRemaining: number;
   priority: string;
   status: string;
 }
 
 export interface GetUpcomingDeadlinesOutput {
-  daysLookahead: number;
   total: number;
-  deadlines: DeadlineItemSummary[];
+  days: number;
+  deadlines: UpcomingDeadlineItem[];
 }
 
 // ------------------------------------------
-// Tool 4: getStudentProfile
+// Tool: getStudentProfile
 // ------------------------------------------
 export interface GetStudentProfileInput {
-  // No required input parameters
+  // Empty input; student userId is securely provided by AgentContext
 }
 
-export interface GetStudentProfileOutput {
+export interface StudentProfileData {
+  id: string;
+  studentId: string;
   name: string;
   email: string;
   college: string | null;
+  department: string | null;
   course: string | null;
   semester: number | null;
   skills: string[];
   careerGoals: string | null;
 }
 
-// ------------------------------------------
-// Tool 5: createStudyPlan
-// ------------------------------------------
-export interface CreateStudyPlanInput {
-  subject: string;
-  date?: string;
-  durationMinutes?: number;
-  topics?: string[];
+export interface GetStudentProfileOutput {
+  found: boolean;
+  profile: StudentProfileData | null;
+  message?: string;
 }
 
-export interface StudyPlanSessionSummary {
-  id: string;
-  subject: string;
+// ------------------------------------------
+// Tool: createStudyPlan
+// ------------------------------------------
+export interface CreateStudyPlanInput {
+  days?: number;
+  focus?: string;
+}
+
+export interface StudyPlanPriorityItem {
+  id?: string;
+  title: string;
+  subject?: string | null;
+  dueDate?: string;
+  priority?: string;
+  status?: string;
+  isOverdue?: boolean;
+}
+
+export interface StudyPlanDeadlineItem {
+  id?: string;
+  title: string;
+  subject?: string | null;
+  dueDate: string;
+}
+
+export interface StudyPlanDay {
+  day: number;
   date: string;
-  durationMinutes: number;
-  topic: string;
-  status: string;
+  focusTopic: string;
+  suggestedTasks: string[];
+}
+
+export interface StudyPlanNoteContext {
+  documentTitle: string;
+  snippet: string;
 }
 
 export interface CreateStudyPlanOutput {
   success: boolean;
-  message: string;
-  plan: StudyPlanSessionSummary;
+  days: number;
+  focus?: string;
+  student: {
+    name: string;
+    course?: string | null;
+    semester?: number | null;
+  };
+  priorities: StudyPlanPriorityItem[];
+  upcomingDeadlines: StudyPlanDeadlineItem[];
+  schedule: StudyPlanDay[];
+  relevantNotes?: StudyPlanNoteContext[];
+  hasRealDatabaseAssignments: boolean;
+  notesContextAvailable: boolean;
+  message?: string;
 }
 
 // ------------------------------------------
-// Agent Loop Execution Types
+// Agent Execution & Loop Types
 // ------------------------------------------
 export interface ToolCallExecutionSummary {
   name: string;
@@ -144,20 +196,41 @@ export interface ToolCallExecutionSummary {
 }
 
 export interface AgentChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
+  tool_call_id?: string;
+  tool_calls?: any[];
 }
+
+export interface AgentProgressEvent {
+  type: 'status' | 'tool_call' | 'chunk' | 'done';
+  status?: string;
+  tool?: string;
+  chunk?: string;
+}
+
+export type AgentProgressCallback = (event: AgentProgressEvent) => void;
 
 export interface AgentInput {
   userMessage: string;
   history?: AgentChatMessage[];
   context: AgentContext;
+  onProgress?: AgentProgressCallback;
+}
+
+export interface AgentSourceCitation {
+  documentId: string;
+  documentName: string;
+  similarity?: number;
+  chunkIndex?: number;
+  pageNumber?: number | null;
 }
 
 export interface AgentOutput {
   message: string;
   toolCallsExecuted: ToolCallExecutionSummary[];
   model: string;
-  isSimulated: boolean;
   iterations: number;
+  isSimulated?: boolean;
+  sources?: AgentSourceCitation[];
 }

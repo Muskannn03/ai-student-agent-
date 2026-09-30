@@ -33,6 +33,7 @@ export interface ProviderChatOptions {
   tools?: ProviderToolDefinition[] | any[];
   toolChoice?: 'auto' | 'none';
   timeoutMs?: number;
+  onChunk?: (chunk: string) => void;
 }
 
 export interface ProviderChatResult {
