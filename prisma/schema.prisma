@@ -1,0 +1,233 @@
+// ==========================================
+// Prisma Schema for AI Student Agent
+// Database: PostgreSQL
+// ==========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------
+// Enums
+// ------------------------------------------
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum SessionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+// ------------------------------------------
+// 1. User Model
+// ------------------------------------------
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  password       String?         // password or auth identifier (nullable for OAuth / passwordless)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relationships
+  studentProfile StudentProfile?
+  assignments    Assignment[]
+  subjects       Subject[]
+  studySessions  StudySession[]
+  timetables     Timetable[]
+  chatSessions   ChatSession[]
+  noteDocuments  NoteDocument[]
+
+  @@map("users")
+}
+
+// ------------------------------------------
+// 2. StudentProfile Model
+// ------------------------------------------
+model StudentProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  college     String?
+  course      String?
+  semester    Int?
+  skills      String[] @default([])
+  careerGoals String?
+
+  @@map("student_profiles")
+}
+
+// ------------------------------------------
+// 3. Subject Model
+// ------------------------------------------
+model Subject {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+
+  // Relationships
+  assignments   Assignment[]
+  studySessions StudySession[]
+  timetables    Timetable[]
+
+  @@unique([userId, name])
+  @@map("subjects")
+}
+
+// ------------------------------------------
+// 4. Assignment Model
+// ------------------------------------------
+model Assignment {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  subject     String?   // Subject name or code
+  subjectId   String?
+  subjectRef  Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  dueDate     DateTime
+  priority    Priority  @default(MEDIUM)
+  status      Status    @default(PENDING)
+  createdAt   DateTime  @default(now())
+
+  @@map("assignments")
+}
+
+// ------------------------------------------
+// 5. StudySession Model
+// ------------------------------------------
+model StudySession {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  date      DateTime
+  duration  Int           // duration in minutes
+  topic     String
+  status    SessionStatus @default(PLANNED)
+
+  @@map("study_sessions")
+}
+
+// ------------------------------------------
+// 6. Timetable Model
+// ------------------------------------------
+model Timetable {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  day       DayOfWeek
+  startTime String    // format: "HH:mm" e.g. "09:00"
+  endTime   String    // format: "HH:mm" e.g. "10:30"
+
+  @@map("timetables")
+}
+
+// ------------------------------------------
+// 7. ChatSession Model
+// ------------------------------------------
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String        @default("New Academic Chat")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+// ------------------------------------------
+// 8. ChatMessage Model
+// ------------------------------------------
+model ChatMessage {
+  id            String      @id @default(cuid())
+  chatSessionId String
+  chatSession   ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  role          MessageRole @default(USER)
+  content       String      @db.Text
+  createdAt     DateTime    @default(now())
+
+  @@map("chat_messages")
+}
+
+// ------------------------------------------
+// 9. NoteDocument Model (RAG Knowledge Base)
+// ------------------------------------------
+model NoteDocument {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  fileName   String
+  fileSize   Int             // bytes
+  pageCount  Int             @default(1)
+  subject    String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  chunks     DocumentChunk[]
+
+  @@map("note_documents")
+}
+
+// ------------------------------------------
+// 10. DocumentChunk Model (Embeddings & Semantic Text)
+// ------------------------------------------
+model DocumentChunk {
+  id         String       @id @default(cuid())
+  documentId String
+  document   NoteDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  chunkIndex Int
+  content    String       @db.Text
+  tokenCount Int?
+  embedding  Float[]      // Array of floats for vector representation
+  createdAt  DateTime     @default(now())
+
+  @@index([userId])
+  @@index([documentId])
+  @@map("document_chunks")
+}
