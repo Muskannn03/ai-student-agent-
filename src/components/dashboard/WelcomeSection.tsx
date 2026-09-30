@@ -52,20 +52,9 @@ export function WelcomeSection({
             Welcome back, <span className="text-[#800020]">{firstName}</span>!
           </h1>
 
-          {/* AI-Generated Motivational Insight Box */}
-          <div className="flex items-start gap-3 rounded-2xl border border-[#EDE1D3] bg-[#FAF5EE] p-3.5 text-xs text-[#2A1B1E]">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <span className="font-semibold text-[#800020] uppercase tracking-wider text-[10px] block mb-0.5">
-                Academic Mindset
-              </span>
-              <p className="leading-relaxed text-[#5C4549] italic">
-                "{motivationalMessage}"
-              </p>
-            </div>
-          </div>
+          <p className="text-xs sm:text-sm text-[#786568]">
+            Your calm academic workspace for coursework, lecture notes, and study scheduling.
+          </p>
         </div>
 
         {/* Right Column: Study Streak & Academic Standing */}

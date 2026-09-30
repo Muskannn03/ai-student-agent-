@@ -25,7 +25,7 @@ export function TodaysOverview({
       title: "Today's Classes",
       value: classesCount,
       unit: classesCount === 1 ? 'class' : 'classes',
-      subtitle: classesCount > 0 ? 'Next at 09:00 AM' : 'No classes today',
+      subtitle: classesCount > 0 ? `${classesCount} scheduled` : 'No classes today',
       icon: BookOpen,
       href: '/timetable',
       actionText: 'View schedule',

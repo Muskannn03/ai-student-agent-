@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   CalendarRange,
@@ -12,27 +12,73 @@ import {
   Briefcase,
   GraduationCap,
   Sparkles,
-  ChevronRight,
+  LogOut,
+  LogIn,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { mockStudent } from '@/lib/mock-data';
 
 interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
+interface UserProfile {
+  name: string;
+  email: string;
+  course: string;
+  semester: number;
+}
+
 export function Sidebar({ onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+    }
+    loadUser();
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      router.push('/login');
+      router.refresh();
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+  };
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'AI Tutor Chat', href: '/chat', icon: Sparkles, badge: 'Agent' },
     { name: 'Study Plan', href: '/study-plan', icon: CalendarRange },
-    { name: 'Assignments', href: '/assignments', icon: CheckSquare, count: '3' },
+    { name: 'Assignments', href: '/assignments', icon: CheckSquare },
     { name: 'Notes & AI Summaries', href: '/notes', icon: BookOpen },
     { name: 'Timetable', href: '/timetable', icon: Clock },
     { name: 'Career & Roadmap', href: '/career', icon: Briefcase },
   ];
+
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'ST';
 
   return (
     <aside className="flex h-full w-64 flex-col justify-between border-r border-[#EDE1D3] bg-white/95 backdrop-blur-xl">
@@ -55,8 +101,9 @@ export function Sidebar({ onCloseMobile }: SidebarProps) {
           <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9E8B8D]">
             Workspace
           </div>
+
           {navigation.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            const isActive = pathname === item.href;
             const Icon = item.icon;
 
             return (
@@ -65,32 +112,25 @@ export function Sidebar({ onCloseMobile }: SidebarProps) {
                 href={item.href}
                 onClick={onCloseMobile}
                 className={cn(
-                  'group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium transition-all duration-200',
+                  'group flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium transition-all',
                   isActive
-                    ? 'bg-[#F3E6D5] text-[#5C0017] font-semibold border border-[#E2CEB9]'
-                    : 'text-[#6A575A] hover:bg-[#FAF4EC] hover:text-[#2A1B1E]'
+                    ? 'bg-[#F3E6D5] text-[#5C0017] font-semibold shadow-2xs border border-[#E8D9C8]'
+                    : 'text-[#6A575A] hover:bg-[#FAF5EE] hover:text-[#2A1B1E]'
                 )}
               >
                 <div className="flex items-center gap-3">
                   <Icon
                     className={cn(
-                      'h-4.5 w-4.5 transition-colors',
-                      isActive ? 'text-[#800020]' : 'text-[#8C7A7C] group-hover:text-[#2A1B1E]'
+                      'h-4 w-4 transition-colors',
+                      isActive ? 'text-[#800020]' : 'text-[#8C7A7C] group-hover:text-[#800020]'
                     )}
                   />
                   <span>{item.name}</span>
                 </div>
 
                 {item.badge && (
-                  <span className="rounded-full bg-[#FBECEF] px-2 py-0.5 text-[10px] font-semibold text-[#800020] border border-[#F4CDD5] flex items-center gap-1">
-                    <Sparkles className="h-2.5 w-2.5 text-[#D45060]" />
+                  <span className="rounded-md bg-[#FAF5EE] px-1.5 py-0.5 text-[10px] font-medium text-[#786568] border border-[#EDE1D3]">
                     {item.badge}
-                  </span>
-                )}
-
-                {item.count && (
-                  <span className="rounded-full bg-[#F5ECE1] px-2 py-0.5 text-[10px] font-semibold text-[#63493E] border border-[#E5D7C6]">
-                    {item.count}
                   </span>
                 )}
               </Link>
@@ -99,34 +139,42 @@ export function Sidebar({ onCloseMobile }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Footer Info & Student Mini Profile */}
-      <div className="p-4 space-y-3 border-t border-[#EDE1D3]">
-        {/* Agent Status Badge */}
-        <div className="rounded-xl border border-[#EDE1D3] bg-[#FAF5EE] p-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 font-medium text-[#2A1B1E]">
-              <span className="h-2 w-2 rounded-full bg-[#538E6E] animate-pulse" />
-              Agent Core
-            </span>
-            <span className="text-[10px] text-[#800020] font-mono font-medium">Ready</span>
-          </div>
-          <p className="mt-1 text-[11px] text-[#786568]">
-            {process.env.NEXT_PUBLIC_AI_PROVIDER === 'openai' ? 'GPT-4o' : 'Llama 3.2'} & Prisma active
-          </p>
-        </div>
+      {/* Footer Info & Active Student Profile */}
+      <div className="p-4 border-t border-[#EDE1D3]">
+        {user ? (
+          <div className="flex items-center justify-between rounded-xl bg-[#FAF5EE] p-2.5 border border-[#EDE1D3]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F3E6D5] font-semibold text-[#5C0017] text-xs border border-[#E2CEB9]">
+                {initials}
+                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-white bg-[#538E6E]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-[#2A1B1E]">{user.name}</p>
+                <p className="truncate text-[10px] text-[#786568]">
+                  {user.course || 'Student'} • Sem {user.semester || 1}
+                </p>
+              </div>
+            </div>
 
-        {/* User Card */}
-        <div className="flex items-center gap-3 rounded-xl bg-[#FAF5EE] p-2.5 border border-[#EDE1D3]">
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3E6D5] font-semibold text-[#5C0017] text-xs border border-[#E2CEB9]">
-            AR
-            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#538E6E]" />
+            <button
+              onClick={handleLogout}
+              className="h-7 w-7 flex items-center justify-center rounded-lg text-[#9E8B8E] hover:text-[#D45060] hover:bg-[#FDF2F3] transition-colors ml-1 cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-[#2A1B1E]">{mockStudent.name}</p>
-            <p className="truncate text-[10px] text-[#786568]">GPA {mockStudent.gpa} • Sem {mockStudent.semester}</p>
+        ) : (
+          <div className="space-y-2">
+            <Link
+              href="/login"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#800020] hover:bg-[#6A001B] py-2 px-3 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              <span>Sign In / Register</span>
+            </Link>
           </div>
-          <ChevronRight className="h-4 w-4 text-[#9E8B8D]" />
-        </div>
+        )}
       </div>
     </aside>
   );

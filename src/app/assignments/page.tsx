@@ -6,44 +6,37 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { mockAssignments } from '@/lib/mock-data';
+import { AddAssignmentModal } from '@/components/dashboard/AddAssignmentModal';
 import { Assignment, Status } from '@/types';
 import { getDaysRemaining, getPriorityColor, formatDate } from '@/lib/utils';
 import {
   CheckSquare,
   Clock,
-  AlertTriangle,
   Sparkles,
   Plus,
   CheckCircle,
   Circle,
   Filter,
+  Trash2,
 } from 'lucide-react';
 
 export default function AssignmentsPage() {
-  const [assignments, setAssignments] = useState<Assignment[]>(mockAssignments);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [filter, setFilter] = useState<string>('ALL');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const fetchAssignments = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/assignments${filter !== 'ALL' ? `?status=${filter}` : ''}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      setAssignments(json.data || mockAssignments);
+      setAssignments(json.data || []);
     } catch (err) {
-      console.warn('Assignments fetch failed, using fallback:', err);
-      setAssignments(
-        filter === 'ALL'
-          ? mockAssignments
-          : mockAssignments.filter((a) => a.status === filter)
-      );
-      setError('Working in offline mode. Showing cached coursework.');
+      console.error('Failed to fetch assignments:', err);
+      setAssignments([]);
     } finally {
       setIsLoading(false);
     }
@@ -54,17 +47,42 @@ export default function AssignmentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string, currentStatus: Status) => {
+    const nextStatus: Status = currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+    
+    // Optimistic UI update
     setAssignments((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const nextStatus: Status =
-            item.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
-          return { ...item, status: nextStatus };
-        }
-        return item;
-      })
+      prev.map((item) => (item.id === id ? { ...item, status: nextStatus } : item))
     );
+
+    try {
+      await fetch('/api/assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: nextStatus }),
+      });
+    } catch (err) {
+      console.error('Error toggling assignment status:', err);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to remove this assignment?')) return;
+
+    setAssignments((prev) => prev.filter((a) => a.id !== id));
+
+    try {
+      await fetch(`/api/assignments?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      console.error('Error deleting assignment:', err);
+    }
+  };
+
+  const handleAddAssignment = (newAssignment: Assignment) => {
+    setAssignments((prev) => [newAssignment, ...prev]);
   };
 
   const handleAskAI = (assignmentTitle: string, course: string) => {
@@ -82,17 +100,9 @@ export default function AssignmentsPage() {
   return (
     <AppShell
       title="Assignments & Coursework"
-      subtitle="Track problem sets, lab reports, team projects, and AI breakdown milestones"
+      subtitle="Track problem sets, lab reports, and deadlines"
     >
       <div className="space-y-6">
-        {error && (
-          <ErrorAlert
-            title="Notice"
-            message={error}
-            onRetry={fetchAssignments}
-          />
-        )}
-
         {/* Filter Bar & Add Button */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-1.5 rounded-xl border border-[#EDE1D3] bg-white p-1 shadow-2xs">
@@ -114,21 +124,8 @@ export default function AssignmentsPage() {
 
           <Button
             size="sm"
-            onClick={() => {
-              const newAssignment: Assignment = {
-                id: `as_${Date.now()}`,
-                title: 'New Problem Set (Draft)',
-                description: 'Enter assignment requirements and notes.',
-                dueDate: new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString(),
-                priority: 'MEDIUM',
-                status: 'PENDING',
-                courseCode: 'CS301',
-                courseName: 'Algorithms & Complexity',
-                totalPoints: 100,
-              };
-              setAssignments((prev) => [newAssignment, ...prev]);
-            }}
-            className="gap-1.5 text-xs"
+            onClick={() => setIsAddModalOpen(true)}
+            className="gap-1.5 text-xs cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             Add Assignment
@@ -138,116 +135,123 @@ export default function AssignmentsPage() {
         {/* Content Section */}
         {isLoading ? (
           <div className="py-20 flex justify-center">
-            <LoadingSpinner size="md" label="Loading coursework..." />
+            <LoadingSpinner size="lg" />
           </div>
         ) : assignments.length === 0 ? (
-          <EmptyState
-            icon={CheckSquare}
-            title="No assignments found"
-            description={
-              filter === 'ALL'
-                ? 'You currently have no assignments registered.'
-                : `There are no ${filter.toLowerCase().replace('_', ' ')} assignments.`
-            }
-            actionLabel="Reset Filter"
-            onAction={() => setFilter('ALL')}
-          />
+          <Card className="p-8 text-center border border-[#EDE1D3] bg-white">
+            <EmptyState
+              icon={CheckSquare}
+              title={filter === 'ALL' ? 'No assignments yet' : `No ${filter.toLowerCase()} assignments`}
+              description="Keep your coursework organized. Add assignments, track due dates, and ask AISA to break down complex tasks."
+              actionLabel="Create Assignment"
+              onAction={() => setIsAddModalOpen(true)}
+            />
+          </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {assignments.map((assignment) => {
-              const deadline = getDaysRemaining(assignment.dueDate);
-              const priorityStyle = getPriorityColor(assignment.priority);
-              const isCompleted = assignment.status === 'COMPLETED';
+              const remaining = getDaysRemaining(assignment.dueDate);
+              const isUrgent = remaining.days <= 2 && !remaining.isOverdue && assignment.status !== 'COMPLETED';
+              const isOverdue = remaining.isOverdue && assignment.status !== 'COMPLETED';
 
               return (
                 <Card
                   key={assignment.id}
-                  hoverEffect
-                  className={`transition-all ${
-                    isCompleted ? 'opacity-70 bg-[#FAF5EE]/70' : 'bg-white'
+                  className={`p-5 flex flex-col justify-between border transition-all ${
+                    assignment.status === 'COMPLETED'
+                      ? 'border-[#EDE1D3] bg-[#FAF5EE]/50 opacity-80'
+                      : isOverdue
+                      ? 'border-[#F8CCD2] bg-white shadow-xs'
+                      : 'border-[#EDE1D3] bg-white hover:border-[#D45060]/40 hover:shadow-xs'
                   }`}
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    {/* Left: Checkbox + Title + Description */}
-                    <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                      <button
-                        onClick={() => toggleStatus(assignment.id)}
-                        className="mt-1 text-[#9E8B8E] hover:text-[#800020] transition-colors cursor-pointer shrink-0"
-                        aria-label="Toggle completion"
-                      >
-                        {isCompleted ? (
-                          <CheckCircle className="h-5 w-5 text-[#800020]" />
-                        ) : (
-                          <Circle className="h-5 w-5" />
-                        )}
-                      </button>
+                  <div className="space-y-3">
+                    {/* Header: Course Code & Badges */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-lg bg-[#FAF5EE] text-[#800020] border border-[#EDE1D3]">
+                          {assignment.courseCode || 'GEN'}
+                        </span>
+                        <span className="text-xs text-[#786568] truncate max-w-[140px] sm:max-w-[180px]">
+                          {assignment.courseName}
+                        </span>
+                      </div>
 
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span
-                            className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
-                            style={{
-                              backgroundColor: '#FBECEF',
-                              color: '#800020',
-                              border: '1px solid #F8CCD2',
-                            }}
-                          >
-                            {assignment.courseCode}
-                          </span>
-                          <span className="text-xs text-[#786568]">{assignment.courseName}</span>
-
-                          {/* Priority */}
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold border ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border}`}
-                          >
-                            {assignment.priority === 'URGENT' && <AlertTriangle className="h-3 w-3" />}
-                            {assignment.priority}
-                          </span>
-                        </div>
-
-                        <h3
-                          className={`text-base font-semibold ${
-                            isCompleted ? 'line-through text-[#9E8B8E]' : 'text-[#2A1B1E]'
-                          }`}
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant={getPriorityColor(assignment.priority) as any}
+                          className="text-[10px] uppercase font-semibold"
                         >
-                          {assignment.title}
-                        </h3>
-
-                        {assignment.description && (
-                          <p className="mt-1 text-xs text-[#786568] line-clamp-2 leading-relaxed">
-                            {assignment.description}
-                          </p>
-                        )}
-
-                        <div className="mt-2.5 flex items-center gap-4 text-xs text-[#786568]">
-                          <span className="flex items-center gap-1 font-mono text-[11px]">
-                            <Clock className="h-3.5 w-3.5 text-[#9E8B8E]" />
-                            Due: {formatDate(assignment.dueDate)}
-                          </span>
-                          {assignment.totalPoints && (
-                            <span>{assignment.score ? `${assignment.score} / ` : ''}{assignment.totalPoints} pts</span>
-                          )}
-                        </div>
+                          {assignment.priority}
+                        </Badge>
+                        <button
+                          onClick={(e) => handleDelete(e, assignment.id)}
+                          className="h-6 w-6 flex items-center justify-center rounded-lg text-[#9E8B8E] hover:text-[#D45060] hover:bg-[#FDF2F3] transition-colors"
+                          title="Delete assignment"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     </div>
 
-                    {/* Right: Days remaining + Ask AI Agent button */}
-                    <div className="flex items-center gap-2.5 md:self-center shrink-0">
-                      <Badge
-                        variant={deadline.isOverdue ? 'rose' : deadline.days <= 2 ? 'burgundy' : 'cream'}
-                        className="font-mono text-xs"
+                    {/* Title & Description */}
+                    <div>
+                      <h3
+                        className={`text-sm font-semibold tracking-tight ${
+                          assignment.status === 'COMPLETED'
+                            ? 'line-through text-[#9E8B8E]'
+                            : 'text-[#2A1B1E]'
+                        }`}
                       >
-                        {deadline.label}
-                      </Badge>
+                        {assignment.title}
+                      </h3>
+                      {assignment.description && (
+                        <p className="mt-1 text-xs text-[#786568] line-clamp-2 leading-relaxed">
+                          {assignment.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer: Due date & Actions */}
+                  <div className="mt-4 pt-3 border-t border-[#EDE1D3] flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 text-[#786568]">
+                      <Clock className="h-3.5 w-3.5 text-[#9E8B8E]" />
+                      <span className={isUrgent ? 'font-semibold text-[#D45060]' : ''}>
+                        {formatDate(assignment.dueDate)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          handleAskAI(assignment.title, assignment.courseName || assignment.courseCode || '')
+                        }
+                        className="h-7 text-xs text-[#800020] hover:bg-[#FBECEF] gap-1 px-2"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        <span>Break Down</span>
+                      </Button>
 
                       <Button
-                        variant="secondary"
+                        variant={assignment.status === 'COMPLETED' ? 'outline' : 'primary'}
                         size="sm"
-                        onClick={() => handleAskAI(assignment.title, assignment.courseCode)}
-                        className="gap-1.5 text-xs"
+                        onClick={() => toggleStatus(assignment.id, assignment.status)}
+                        className="h-7 text-xs gap-1 px-2.5"
                       >
-                        <Sparkles className="h-3.5 w-3.5 text-[#800020]" />
-                        <span>Breakdown</span>
+                        {assignment.status === 'COMPLETED' ? (
+                          <>
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            <span>Done</span>
+                          </>
+                        ) : (
+                          <>
+                            <Circle className="h-3.5 w-3.5" />
+                            <span>Mark Done</span>
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -257,6 +261,12 @@ export default function AssignmentsPage() {
           </div>
         )}
       </div>
+
+      <AddAssignmentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddAssignment={handleAddAssignment}
+      />
     </AppShell>
   );
 }

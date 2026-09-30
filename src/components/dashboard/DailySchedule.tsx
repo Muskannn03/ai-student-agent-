@@ -23,7 +23,7 @@ export function DailySchedule({ schedule }: DailyScheduleProps) {
         <EmptyState
           icon={Calendar}
           title="No classes scheduled for today"
-          description="It's a free study day. Use this time to catch up on assignments or project research."
+          description="Your schedule is clear for today."
         />
       </Card>
     );

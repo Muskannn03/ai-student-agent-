@@ -31,9 +31,9 @@ export function UpcomingAssignments({
         </CardHeader>
         <EmptyState
           icon={CheckSquare}
-          title="All caught up!"
-          description="You have no pending assignments right now. Enjoy your free time or prepare ahead."
-          actionLabel="Create Assignment"
+          title="No upcoming assignments"
+          description="Add your coursework and problem sets to track due dates."
+          actionLabel="Add Assignment"
           onAction={onOpenAddModal || (() => window.location.href = '/assignments')}
         />
       </Card>

@@ -1,41 +1,95 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { formatTime } from '@/lib/utils';
-import { Clock, MapPin, Calendar, BookOpen, Download } from 'lucide-react';
+import { Clock, MapPin, Calendar, Plus, Trash2 } from 'lucide-react';
 import { DayOfWeek, TimetableItem } from '@/types';
 
-const weeklyScheduleData: Record<DayOfWeek, TimetableItem[]> = {
-  MONDAY: [
-    { id: 'm1', day: 'MONDAY', startTime: '09:00', endTime: '10:30', courseName: 'Algorithms & Complexity', courseCode: 'CS301', location: 'Turing Hall 302', type: 'LECTURE', colorHex: '#7FA99B' },
-    { id: 'm2', day: 'MONDAY', startTime: '11:00', endTime: '12:30', courseName: 'Deep Learning Lab', courseCode: 'AI402', location: 'Ada Lovelace Lab B', type: 'LAB', colorHex: '#D48D8D' },
-    { id: 'm3', day: 'MONDAY', startTime: '14:00', endTime: '15:15', courseName: 'Database Systems & SQL', courseCode: 'DS205', location: 'Science Complex 114', type: 'LECTURE', colorHex: '#8CAECC' },
-  ],
-  TUESDAY: [
-    { id: 't1', day: 'TUESDAY', startTime: '10:00', endTime: '11:30', courseName: 'Linear Algebra & Optimization', courseCode: 'MATH210', location: 'Euler Hall 101', type: 'LECTURE', colorHex: '#E0B36E' },
-    { id: 't2', day: 'TUESDAY', startTime: '13:00', endTime: '14:30', courseName: 'Technical Communications', courseCode: 'ENG104', location: 'Humanities 204', type: 'TUTORIAL', colorHex: '#9B8EB8' },
-  ],
-  WEDNESDAY: [
-    { id: 'w1', day: 'WEDNESDAY', startTime: '09:00', endTime: '10:30', courseName: 'Algorithms & Complexity', courseCode: 'CS301', location: 'Turing Hall 302', type: 'LECTURE', colorHex: '#7FA99B' },
-    { id: 'w2', day: 'WEDNESDAY', startTime: '14:00', endTime: '16:00', courseName: 'Database SQL Benchmarking Lab', courseCode: 'DS205', location: 'Science Complex 114', type: 'LAB', colorHex: '#8CAECC' },
-  ],
-  THURSDAY: [
-    { id: 'th1', day: 'THURSDAY', startTime: '10:00', endTime: '11:30', courseName: 'Linear Algebra & Optimization', courseCode: 'MATH210', location: 'Euler Hall 101', type: 'LECTURE', colorHex: '#E0B36E' },
-    { id: 'th2', day: 'THURSDAY', startTime: '12:00', endTime: '13:30', courseName: 'Deep Learning & Neural Nets', courseCode: 'AI402', location: 'Ada Lovelace Center A', type: 'LECTURE', colorHex: '#D48D8D' },
-  ],
-  FRIDAY: [
-    { id: 'f1', day: 'FRIDAY', startTime: '11:00', endTime: '12:30', courseName: 'AI Seminar & Paper Discussion', courseCode: 'AI402', location: 'Auditorium C', type: 'SEMINAR', colorHex: '#D48D8D' },
-  ],
+const TIMETABLE_STORAGE_KEY = 'aisa_timetable_schedule';
+
+const initialDefaultSchedule: Record<DayOfWeek, TimetableItem[]> = {
+  MONDAY: [],
+  TUESDAY: [],
+  WEDNESDAY: [],
+  THURSDAY: [],
+  FRIDAY: [],
   SATURDAY: [],
   SUNDAY: [],
 };
 
 export default function TimetablePage() {
+  const [scheduleData, setScheduleData] = useState<Record<DayOfWeek, TimetableItem[]>>(initialDefaultSchedule);
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('MONDAY');
+  const [isAdding, setIsAdding] = useState(false);
+
+  // New Class Form State
+  const [courseCode, setCourseCode] = useState('');
+  const [courseName, setCourseName] = useState('');
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('10:30');
+  const [location, setLocation] = useState('');
+  const [classType, setClassType] = useState<'LECTURE' | 'LAB' | 'TUTORIAL' | 'SEMINAR'>('LECTURE');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(TIMETABLE_STORAGE_KEY);
+      if (saved) {
+        setScheduleData(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const saveSchedule = (updated: Record<DayOfWeek, TimetableItem[]>) => {
+    setScheduleData(updated);
+    try {
+      localStorage.setItem(TIMETABLE_STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleAddClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!courseName.trim()) return;
+
+    const newItem: TimetableItem = {
+      id: `tt_${Date.now()}`,
+      day: selectedDay,
+      startTime,
+      endTime,
+      courseCode: courseCode.trim() || 'CLASS',
+      courseName: courseName.trim(),
+      location: location.trim() || 'Classroom',
+      type: classType,
+      colorHex: '#800020',
+    };
+
+    const updated = {
+      ...scheduleData,
+      [selectedDay]: [...(scheduleData[selectedDay] || []), newItem],
+    };
+
+    saveSchedule(updated);
+    setCourseCode('');
+    setCourseName('');
+    setLocation('');
+    setIsAdding(false);
+  };
+
+  const handleDeleteClass = (id: string) => {
+    const updated = {
+      ...scheduleData,
+      [selectedDay]: (scheduleData[selectedDay] || []).filter((item) => item.id !== id),
+    };
+    saveSchedule(updated);
+  };
 
   const days: Array<{ key: DayOfWeek; label: string }> = [
     { key: 'MONDAY', label: 'Mon' },
@@ -45,10 +99,12 @@ export default function TimetablePage() {
     { key: 'FRIDAY', label: 'Fri' },
   ];
 
+  const currentItems = scheduleData[selectedDay] || [];
+
   return (
     <AppShell
       title="Class Timetable"
-      subtitle="Weekly schedule, lecture halls, lab sessions, and academic calendar"
+      subtitle="Weekly schedule, lecture halls, and academic sessions"
     >
       <div className="space-y-6">
         {/* Top Controls & Day Switcher */}
@@ -57,7 +113,10 @@ export default function TimetablePage() {
             {days.map((d) => (
               <button
                 key={d.key}
-                onClick={() => setSelectedDay(d.key)}
+                onClick={() => {
+                  setSelectedDay(d.key);
+                  setIsAdding(false);
+                }}
                 className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                   selectedDay === d.key
                     ? 'bg-[#F3E6D5] text-[#5C0017] font-semibold border border-[#E8D9C8]'
@@ -69,124 +128,163 @@ export default function TimetablePage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                alert('iCal calendar sync file ready for export.');
-              }}
-              className="gap-1.5 text-xs"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export .ics
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            onClick={() => setIsAdding(!isAdding)}
+            className="gap-1.5 text-xs cursor-pointer shadow-xs"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{isAdding ? 'Cancel' : 'Add Class'}</span>
+          </Button>
         </div>
 
-        {/* Weekly Grid (Desktop: 5 Columns) */}
-        <div className="hidden lg:grid lg:grid-cols-5 gap-4">
-          {days.map((d) => {
-            const classes = weeklyScheduleData[d.key];
-            const isToday = d.key === 'MONDAY';
-
-            return (
-              <div key={d.key} className="space-y-3">
-                <div
-                  className={`flex items-center justify-between rounded-2xl border p-3 shadow-2xs ${
-                    isToday
-                      ? 'border-[#F8CCD2] bg-[#FBECEF] text-[#800020]'
-                      : 'border-[#EDE1D3] bg-white text-[#2A1B1E]'
-                  }`}
-                >
-                  <span className="text-sm font-semibold">{d.label}</span>
-                  <Badge variant={isToday ? 'burgundy' : 'cream'} className="text-[10px] py-0">
-                    {classes.length} {classes.length === 1 ? 'class' : 'classes'}
-                  </Badge>
+        {/* Add Class Form */}
+        {isAdding && (
+          <Card className="p-5 border border-[#EDE1D3] bg-[#FAF5EE]">
+            <form onSubmit={handleAddClass} className="space-y-4">
+              <h3 className="text-sm font-semibold text-[#2A1B1E]">
+                Add Class for {selectedDay}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#786568] mb-1">
+                    Course Code
+                  </label>
+                  <input
+                    type="text"
+                    value={courseCode}
+                    onChange={(e) => setCourseCode(e.target.value)}
+                    placeholder="e.g. CS301"
+                    className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3 py-2 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none"
+                  />
                 </div>
 
-                <div className="space-y-3">
-                  {classes.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-[#EDE1D3] p-6 text-center text-xs text-[#9E8B8E]">
-                      No classes
-                    </div>
-                  ) : (
-                    classes.map((cls) => (
-                      <div
-                        key={cls.id}
-                        className="rounded-2xl border border-[#EDE1D3] bg-white p-3.5 hover:border-[#D45060]/40 transition-all space-y-2 shadow-2xs"
-                      >
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span
-                            className="font-semibold px-2 py-0.5 rounded-md text-[10px]"
-                            style={{
-                              backgroundColor: '#FBECEF',
-                              color: '#800020',
-                              border: '1px solid #F8CCD2',
-                            }}
-                          >
-                            {cls.courseCode}
-                          </span>
-                          <span className="text-[#800020] font-mono text-[10px]">
-                            {formatTime(cls.startTime)}
-                          </span>
-                        </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#786568] mb-1">
+                    Course Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={courseName}
+                    onChange={(e) => setCourseName(e.target.value)}
+                    placeholder="e.g. Algorithms & Complexity"
+                    className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3 py-2 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none"
+                  />
+                </div>
 
-                        <p className="text-xs font-semibold text-[#2A1B1E] leading-snug">
-                          {cls.courseName}
-                        </p>
+                <div>
+                  <label className="block text-xs font-medium text-[#786568] mb-1">
+                    Time Window
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full rounded-xl border border-[#EDE1D3] bg-white px-2 py-2 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none"
+                    />
+                    <span className="text-xs text-[#786568]">-</span>
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full rounded-xl border border-[#EDE1D3] bg-white px-2 py-2 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none"
+                    />
+                  </div>
+                </div>
 
-                        <div className="flex items-center gap-1.5 text-[11px] text-[#786568]">
-                          <MapPin className="h-3 w-3 text-[#9E8B8E] shrink-0" />
-                          <span className="truncate">{cls.location}</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                <div>
+                  <label className="block text-xs font-medium text-[#786568] mb-1">
+                    Location / Room
+                  </label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. Room 302"
+                    className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3 py-2 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none"
+                  />
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Mobile / Tablet Day Detail View */}
-        <div className="lg:hidden space-y-3">
-          <h3 className="text-sm font-semibold text-[#2A1B1E] flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-[#800020]" />
-            {selectedDay} Schedule
-          </h3>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsAdding(false)}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" size="sm" className="text-xs">
+                  Save Class
+                </Button>
+              </div>
+            </form>
+          </Card>
+        )}
 
-          {weeklyScheduleData[selectedDay].length === 0 ? (
-            <Card className="text-center py-8 text-sm text-[#786568]">
-              No classes scheduled for {selectedDay}.
-            </Card>
-          ) : (
-            weeklyScheduleData[selectedDay].map((cls) => (
-              <Card key={cls.id} className="p-4 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span
-                    className="font-semibold px-2 py-0.5 rounded text-[10px]"
-                    style={{
-                      backgroundColor: '#FBECEF',
-                      color: '#800020',
-                      border: '1px solid #F8CCD2',
-                    }}
-                  >
-                    {cls.courseCode}
-                  </span>
-                  <span className="text-[#800020] font-mono font-medium">
-                    {formatTime(cls.startTime)} - {formatTime(cls.endTime)}
-                  </span>
+        {/* Timetable Items Display */}
+        {currentItems.length === 0 ? (
+          <Card className="p-8 text-center border border-[#EDE1D3] bg-white">
+            <EmptyState
+              icon={Calendar}
+              title={`No classes scheduled for ${selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase()}`}
+              description="Keep your week organized. Add your lecture, seminar, or lab sessions."
+              actionLabel="Add Class"
+              onAction={() => setIsAdding(true)}
+            />
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {currentItems.map((item) => (
+              <Card
+                key={item.id}
+                className="p-4 border border-[#EDE1D3] bg-white hover:border-[#D45060]/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-lg bg-[#FAF5EE] text-[#800020] border border-[#EDE1D3]">
+                        {item.courseCode}
+                      </span>
+                      <h4 className="text-sm font-semibold text-[#2A1B1E]">{item.courseName}</h4>
+                    </div>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-[#786568]">
+                      <span>
+                        {formatTime(item.startTime)} - {formatTime(item.endTime)}
+                      </span>
+                      {item.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 text-[#9E8B8E]" />
+                          {item.location}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <h4 className="text-sm font-semibold text-[#2A1B1E]">{cls.courseName}</h4>
-                <div className="flex items-center gap-1.5 text-xs text-[#786568]">
-                  <MapPin className="h-3.5 w-3.5 text-[#9E8B8E]" />
-                  <span>{cls.location}</span>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <Badge variant="rose" className="text-[10px] uppercase font-semibold">
+                    {item.type}
+                  </Badge>
+                  <button
+                    onClick={() => handleDeleteClass(item.id)}
+                    className="h-7 w-7 flex items-center justify-center rounded-lg text-[#9E8B8E] hover:text-[#D45060] hover:bg-[#FDF2F3] transition-colors"
+                    title="Remove class"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </Card>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   );
