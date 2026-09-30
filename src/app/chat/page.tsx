@@ -307,7 +307,7 @@ function ChatContainer() {
   const activeTitle = activeSession ? activeSession.title : 'New Study Session';
 
   return (
-    <div className="flex h-[calc(100vh-7.5rem)] rounded-3xl border border-slate-800/80 bg-slate-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+    <div className="flex h-[calc(100vh-7.5rem)] rounded-3xl border border-[#EDE1D3] bg-white overflow-hidden shadow-[0_4px_20px_rgba(42,27,30,0.04)]">
       {/* Conversation Sidebar (Collapsible on mobile) */}
       <ChatSidebar
         conversations={conversations}
@@ -346,10 +346,10 @@ export default function ChatPage() {
     >
       <Suspense
         fallback={
-          <div className="flex h-[calc(100vh-10rem)] items-center justify-center rounded-3xl border border-slate-800/80 bg-slate-900/40">
-            <div className="flex items-center gap-3 text-slate-400 text-sm">
-              <span className="h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-              <span>Initializing AI Student Agent session...</span>
+          <div className="flex h-[calc(100vh-10rem)] items-center justify-center rounded-3xl border border-[#EDE1D3] bg-white">
+            <div className="flex items-center gap-3 text-[#786568] text-sm">
+              <span className="h-4 w-4 rounded-full border-2 border-[#EDE1D3] border-t-[#800020] animate-spin" />
+              <span>Initializing calm study session...</span>
             </div>
           </div>
         }

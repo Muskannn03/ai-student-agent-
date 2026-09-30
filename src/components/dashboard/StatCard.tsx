@@ -25,33 +25,29 @@ export function StatCard({
 }: StatCardProps) {
   const themeStyles = {
     indigo: {
-      iconBg: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-      glow: 'before:bg-indigo-500/10',
+      iconBg: 'bg-[#FBECEF] text-[#800020] border-[#F8CCD2]',
     },
     emerald: {
-      iconBg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-      glow: 'before:bg-emerald-500/10',
+      iconBg: 'bg-[#F5ECE1] text-[#800020] border-[#E8D9C8]',
     },
     amber: {
-      iconBg: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-      glow: 'before:bg-amber-500/10',
+      iconBg: 'bg-[#FDF2F3] text-[#D45060] border-[#F8CCD2]',
     },
     violet: {
-      iconBg: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-      glow: 'before:bg-violet-500/10',
+      iconBg: 'bg-[#FAF5EE] text-[#5C4549] border-[#EDE1D3]',
     },
   };
 
   const currentTheme = themeStyles[colorTheme];
 
   return (
-    <Card hoverEffect glow className={cn('relative', currentTheme.glow)}>
+    <Card hoverEffect className="relative">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-400">{title}</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-[#786568]">{title}</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">{value}</span>
-            {subtitle && <span className="text-xs text-slate-400">{subtitle}</span>}
+            <span className="text-2xl md:text-3xl font-bold tracking-tight text-[#2A1B1E]">{value}</span>
+            {subtitle && <span className="text-xs text-[#786568]">{subtitle}</span>}
           </div>
         </div>
 
@@ -65,12 +61,12 @@ export function StatCard({
           <span
             className={cn(
               'font-semibold',
-              trend.isPositive ? 'text-emerald-400' : 'text-rose-400'
+              trend.isPositive ? 'text-[#800020]' : 'text-[#D45060]'
             )}
           >
             {trend.value}
           </span>
-          <span className="text-slate-500">vs last semester</span>
+          <span className="text-[#9E8B8E]">vs last semester</span>
         </div>
       )}
     </Card>

@@ -28,20 +28,20 @@ export function QuickAIAssistant() {
   };
 
   return (
-    <Card glow className="border-indigo-500/30 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-indigo-950/30 p-6">
+    <Card className="border border-[#EDE1D3] bg-gradient-to-br from-white via-[#FAF5EE] to-[#FBECEF] p-6 shadow-xs">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/25">
-            <Sparkles className="h-6 w-6 text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
+            <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <h3 className="text-base font-semibold text-[#2A1B1E] flex items-center gap-2">
               AI Student Agent Co-Pilot
-              <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-semibold text-indigo-300 border border-indigo-500/30">
+              <span className="rounded-full bg-[#FBECEF] px-2 py-0.5 text-[10px] font-semibold text-[#800020] border border-[#F8CCD2]">
                 {process.env.NEXT_PUBLIC_AI_PROVIDER === 'openai' ? 'GPT-4o Ready' : 'Llama 3.2 Ready'}
               </span>
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#786568]">
               Ask any academic question, request exam revisions, or generate custom study plans.
             </p>
           </div>
@@ -55,7 +55,7 @@ export function QuickAIAssistant() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Ask a question, paste an assignment problem, or ask for study advice..."
-          className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 px-4 py-3.5 pr-28 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all shadow-inner"
+          className="w-full rounded-2xl border border-[#EDE1D3] bg-white px-4 py-3.5 pr-28 text-sm text-[#2A1B1E] placeholder:text-[#9E8B8E] focus:border-[#800020] focus:outline-none focus:ring-2 focus:ring-[#800020]/20 transition-all shadow-xs"
         />
         <Button
           type="submit"
@@ -70,8 +70,8 @@ export function QuickAIAssistant() {
 
       {/* Quick Prompt Pills */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1 mr-1">
-          <Lightbulb className="h-3 w-3 text-amber-400" />
+        <span className="text-[11px] font-medium text-[#786568] flex items-center gap-1 mr-1">
+          <Lightbulb className="h-3 w-3 text-[#D45060]" />
           Try asking:
         </span>
         {quickPrompts.map((item, index) => {
@@ -81,9 +81,9 @@ export function QuickAIAssistant() {
               key={index}
               type="button"
               onClick={() => handleSelectQuickPrompt(item.query)}
-              className="group flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300 hover:border-indigo-500/40 hover:bg-indigo-500/10 hover:text-white transition-all cursor-pointer"
+              className="group flex items-center gap-1.5 rounded-xl border border-[#EDE1D3] bg-white px-3 py-1.5 text-xs text-[#5C4549] hover:border-[#D45060]/40 hover:bg-[#FAF5EE] hover:text-[#800020] transition-all cursor-pointer shadow-2xs"
             >
-              <Icon className="h-3 w-3 text-slate-400 group-hover:text-indigo-400 transition-colors" />
+              <Icon className="h-3 w-3 text-[#800020] group-hover:text-[#6A001B] transition-colors" />
               <span>{item.label}</span>
             </button>
           );

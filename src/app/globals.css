@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #FFF9F2;
+  --foreground: #2A1B1E;
+  --surface: #FFFFFF;
+  --burgundy: #800020;
+  --cream-soft: #F3E6D5;
+  --ivory-light: #FFF9F2;
+  --rose-accent: #D45060;
+  --border-subtle: #EDE1D3;
+  --text-primary: #2A1B1E;
+  --text-secondary: #786568;
 }
 
 @theme inline {
@@ -17,23 +25,30 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom sleek scrollbar for dashboard */
+::selection {
+  background-color: #F3E6D5;
+  color: #5C0017;
+}
+
+/* Warm, elegant scrollbar matching palette */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: #E2D3C3;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.6);
+  background: #C7B5A3;
 }

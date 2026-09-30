@@ -18,11 +18,11 @@ export function LoadingSpinner({ size = 'md', className, label }: LoadingSpinner
     <div className={cn('flex flex-col items-center justify-center p-6 gap-3', className)}>
       <div
         className={cn(
-          'animate-spin rounded-full border-slate-700 border-t-indigo-500',
+          'animate-spin rounded-full border-[#E5D7C6] border-t-[#800020]',
           sizeMap[size]
         )}
       />
-      {label && <p className="text-xs font-medium text-slate-400 animate-pulse">{label}</p>}
+      {label && <p className="text-xs font-medium text-[#786568] animate-pulse">{label}</p>}
     </div>
   );
 }
@@ -31,7 +31,7 @@ export function SkeletonPulse({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-xl bg-slate-800/60 border border-slate-700/30',
+        'animate-pulse rounded-xl bg-[#F5ECE1] border border-[#E5D7C6]',
         className
       )}
     />

@@ -12,9 +12,9 @@ export function Card({ children, className, hoverEffect = false, glow = false, .
   return (
     <div
       className={cn(
-        'rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 backdrop-blur-xl shadow-xl transition-all duration-300',
-        hoverEffect && 'hover:border-slate-700/80 hover:bg-slate-900/80 hover:shadow-2xl hover:-translate-y-0.5',
-        glow && 'relative overflow-hidden before:absolute before:-left-20 before:-top-20 before:h-40 before:w-40 before:rounded-full before:bg-indigo-500/10 before:blur-3xl',
+        'rounded-2xl border border-[#EDE1D3] bg-white p-6 shadow-[0_2px_8px_rgba(42,27,30,0.03)] text-[#2A1B1E] transition-all duration-200',
+        hoverEffect && 'hover:border-[#DECBC0] hover:shadow-[0_4px_16px_rgba(42,27,30,0.05)] hover:-translate-y-0.5',
+        glow && 'relative overflow-hidden before:absolute before:-left-16 before:-top-16 before:h-36 before:w-36 before:rounded-full before:bg-[#F3E6D5]/60 before:blur-2xl before:pointer-events-none',
         className
       )}
       {...props}
@@ -34,7 +34,7 @@ export function CardHeader({ children, className, ...props }: React.HTMLAttribut
 
 export function CardTitle({ children, className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-lg font-semibold tracking-tight text-white', className)} {...props}>
+    <h3 className={cn('text-base sm:text-lg font-semibold tracking-tight text-[#2A1B1E]', className)} {...props}>
       {children}
     </h3>
   );
@@ -42,7 +42,7 @@ export function CardTitle({ children, className, ...props }: React.HTMLAttribute
 
 export function CardDescription({ children, className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn('text-sm text-slate-400', className)} {...props}>
+    <p className={cn('text-xs sm:text-sm text-[#786568]', className)} {...props}>
       {children}
     </p>
   );

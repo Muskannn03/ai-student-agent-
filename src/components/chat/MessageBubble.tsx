@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Bot, User, Copy, Check, Sparkles, FileText, BookOpen, ExternalLink } from 'lucide-react';
+import { User, Copy, Check, Sparkles, FileText, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface MessageItem {
@@ -49,8 +49,6 @@ function extractSources(content: string): SourceReference[] {
   }
 
   // Match 📚 **Sources** list format:
-  // 📚 **Sources**
-  // - `CS301_Timsort_Notes.pdf`
   const bookRegex = /📚\s*(?:\*\*)?Sources(?:\*\*)?[:\s]*\n([\s\S]+?)(?:\n\n[^\-\•\*]|$)/gi;
   let bookMatch;
   while ((bookMatch = bookRegex.exec(content)) !== null) {
@@ -110,32 +108,34 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       {/* Avatar */}
       <div
         className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl shadow-md text-xs font-bold transition-transform group-hover:scale-105',
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl shadow-2xs text-xs font-semibold transition-transform group-hover:scale-105',
           isUser
-            ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-indigo-600/20'
-            : 'bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-950 text-indigo-400 border border-indigo-500/30 shadow-indigo-500/10'
+            ? 'bg-[#F3E6D5] text-[#800020] border border-[#E8D9C8]'
+            : 'bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]'
         )}
       >
-        {isUser ? <User className="h-4.5 w-4.5" /> : <Bot className="h-5 w-5" />}
+        {isUser ? <User className="h-4.5 w-4.5" /> : <Sparkles className="h-4.5 w-4.5" />}
       </div>
 
       {/* Message Content Container */}
       <div
         className={cn(
-          'relative flex-1 rounded-2xl px-5 py-4 text-sm shadow-xl backdrop-blur-md transition-all',
+          'relative flex-1 rounded-2xl px-5 py-4 text-sm shadow-[0_2px_8px_rgba(42,27,30,0.03)] transition-all',
           isUser
-            ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-tr-sm max-w-[85%] sm:max-w-[75%]'
-            : 'border border-slate-800/80 bg-slate-900/90 text-slate-100 rounded-tl-sm max-w-[95%] sm:max-w-[88%]'
+            ? 'bg-[#F6ECE2] text-[#2A1B1E] border border-[#EBDCCF] rounded-tr-sm max-w-[85%] sm:max-w-[75%]'
+            : 'border border-[#EDE1D3] bg-white text-[#2A1B1E] rounded-tl-sm max-w-[95%] sm:max-w-[88%]'
         )}
       >
         {/* Header label for assistant */}
         {!isUser && (
-          <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-800/60 text-xs">
+          <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-[#FAF5EE] text-xs">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="flex items-center gap-1.5 font-bold text-indigo-400 text-[11px] tracking-wide uppercase">
-                <Sparkles className="h-3 w-3" />
+              <span className="flex items-center gap-1.5 font-semibold text-[#800020] text-[11px] tracking-wide uppercase">
+                <Sparkles className="h-3 w-3 text-[#D45060]" />
                 AI Student Assistant
               </span>
+
+              {/* Calm Tool Activity Chips */}
               {message.toolCalls &&
                 message.toolCalls.map((t, idx) => {
                   const label =
@@ -154,38 +154,38 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                   return (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 border border-emerald-500/25 shadow-sm"
+                      className="inline-flex items-center gap-1 rounded-md bg-[#FBECEF] px-2 py-0.5 text-[10px] font-medium text-[#70001C] border border-[#F8CCD2]"
                     >
-                      <Check className="h-3 w-3 text-emerald-400 shrink-0" />
+                      <Check className="h-3 w-3 text-[#800020] shrink-0" />
                       <span>{label}</span>
                     </span>
                   );
                 })}
             </div>
-            <span className="text-[10px] text-slate-500 font-mono shrink-0">{formattedTime}</span>
+            <span className="text-[10px] text-[#9E8B8E] font-mono shrink-0">{formattedTime}</span>
           </div>
         )}
 
         {/* Content Body */}
         {isUser ? (
-          <div className="whitespace-pre-wrap leading-relaxed text-sm">{message.content}</div>
+          <div className="whitespace-pre-wrap leading-relaxed text-sm text-[#2A1B1E] font-normal">{message.content}</div>
         ) : (
-          <div className="prose prose-invert prose-sm max-w-none space-y-2.5 leading-relaxed text-slate-200">
+          <div className="space-y-2 leading-relaxed text-[#2A1B1E]">
             <ReactMarkdown
               components={{
-                h1: ({ ...props }) => <h1 className="text-lg font-bold text-white mt-2 mb-1" {...props} />,
-                h2: ({ ...props }) => <h2 className="text-base font-bold text-white mt-2 mb-1" {...props} />,
-                h3: ({ ...props }) => <h3 className="text-sm font-semibold text-indigo-300 mt-2 mb-1" {...props} />,
-                h4: ({ ...props }) => <h4 className="text-xs font-semibold text-slate-200 mt-1 mb-0.5" {...props} />,
-                p: ({ ...props }) => <p className="text-xs sm:text-sm text-slate-200 leading-relaxed my-1.5" {...props} />,
-                ul: ({ ...props }) => <ul className="list-disc pl-5 my-1.5 space-y-1 text-xs sm:text-sm text-slate-300" {...props} />,
-                ol: ({ ...props }) => <ol className="list-decimal pl-5 my-1.5 space-y-1 text-xs sm:text-sm text-slate-300" {...props} />,
-                li: ({ ...props }) => <li className="text-slate-300 leading-normal" {...props} />,
-                strong: ({ ...props }) => <strong className="font-semibold text-white" {...props} />,
-                em: ({ ...props }) => <em className="italic text-slate-300" {...props} />,
+                h1: ({ ...props }) => <h1 className="text-base sm:text-lg font-semibold text-[#2A1B1E] mt-2 mb-1" {...props} />,
+                h2: ({ ...props }) => <h2 className="text-sm sm:text-base font-semibold text-[#2A1B1E] mt-2 mb-1" {...props} />,
+                h3: ({ ...props }) => <h3 className="text-xs sm:text-sm font-semibold text-[#800020] mt-2 mb-0.5" {...props} />,
+                h4: ({ ...props }) => <h4 className="text-xs font-semibold text-[#2A1B1E] mt-1 mb-0.5" {...props} />,
+                p: ({ ...props }) => <p className="text-xs sm:text-sm text-[#2A1B1E] leading-relaxed my-1.5" {...props} />,
+                ul: ({ ...props }) => <ul className="list-disc pl-5 my-1.5 space-y-1 text-xs sm:text-sm text-[#4A3B3E]" {...props} />,
+                ol: ({ ...props }) => <ol className="list-decimal pl-5 my-1.5 space-y-1 text-xs sm:text-sm text-[#4A3B3E]" {...props} />,
+                li: ({ ...props }) => <li className="text-[#4A3B3E] leading-normal" {...props} />,
+                strong: ({ ...props }) => <strong className="font-semibold text-[#1F1214]" {...props} />,
+                em: ({ ...props }) => <em className="italic text-[#5C4549]" {...props} />,
                 blockquote: ({ ...props }) => (
                   <blockquote
-                    className="border-l-2 border-indigo-500 bg-indigo-950/20 px-3 py-1.5 my-2 text-xs text-slate-300 rounded-r-lg italic"
+                    className="border-l-2 border-[#D45060] bg-[#FAF5EE] px-3 py-1.5 my-2 text-xs text-[#5C4549] rounded-r-lg italic"
                     {...props}
                   />
                 ),
@@ -194,7 +194,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                   if (isInline) {
                     return (
                       <code
-                        className="rounded-md bg-slate-800/90 px-1.5 py-0.5 font-mono text-[11px] text-indigo-300 border border-slate-700/60"
+                        className="rounded-md bg-[#FAF5EE] px-1.5 py-0.5 font-mono text-[11px] text-[#800020] border border-[#EDE1D3]"
                         {...props}
                       >
                         {children}
@@ -202,7 +202,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     );
                   }
                   return (
-                    <div className="relative my-2.5 rounded-xl border border-slate-800 bg-slate-950/90 p-3.5 font-mono text-xs overflow-x-auto text-slate-200 shadow-inner">
+                    <div className="relative my-2.5 rounded-xl border border-[#EDE1D3] bg-[#FAF5EE] p-3.5 font-mono text-xs overflow-x-auto text-[#2A1B1E]">
                       <code className={className} {...props}>
                         {children}
                       </code>
@@ -214,29 +214,33 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               {message.content}
             </ReactMarkdown>
             {message.isStreaming && (
-              <span className="inline-block w-1.5 h-3.5 ml-1 bg-indigo-400 animate-pulse align-middle rounded-sm" />
+              <span className="inline-block w-1.5 h-3.5 ml-1 bg-[#800020] animate-pulse align-middle rounded-xs" />
             )}
           </div>
         )}
 
-        {/* Source References (RAG Citation Cards) */}
+        {/* Source References (Subtle RAG Citation Cards) */}
         {!isUser && sources.length > 0 && (
-          <div className="mt-3.5 pt-3 border-t border-slate-800/80">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-300 mb-2">
-              <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
-              <span>Verified Notes & Document Sources</span>
+          <div className="mt-3.5 pt-3 border-t border-[#EDE1D3]">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#800020] mb-2">
+              <BookOpen className="h-3.5 w-3.5 text-[#D45060]" />
+              <span>📚 Sources</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {sources.map((src, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 rounded-lg border border-indigo-500/25 bg-indigo-950/40 px-2.5 py-1 text-xs text-indigo-200 shadow-sm"
+                  className="flex items-center gap-1.5 rounded-xl border border-[#EDE1D3] bg-[#FAF5EE] px-2.5 py-1.5 text-xs text-[#2A1B1E] shadow-2xs hover:bg-white hover:border-[#D45060]/50 transition-colors"
                 >
-                  <FileText className="h-3 w-3 text-indigo-400 shrink-0" />
+                  <FileText className="h-3.5 w-3.5 text-[#800020] shrink-0" />
                   <span className="font-medium truncate max-w-[200px] sm:max-w-xs">{src.title}</span>
-                  {src.chunk && (
-                    <span className="text-[10px] text-indigo-300 bg-indigo-900/60 border border-indigo-500/30 px-1.5 py-0.2 rounded font-mono">
+                  {src.chunk ? (
+                    <span className="text-[10px] text-[#800020] bg-[#FBECEF] border border-[#F8CCD2] px-1.5 py-0.2 rounded font-mono">
                       Chunk #{src.chunk}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-[#786568] bg-[#F5ECE1] px-1.5 py-0.2 rounded">
+                      Verified note
                     </span>
                   )}
                 </div>
@@ -246,8 +250,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Footer info & Copy button */}
-        <div className="mt-2.5 flex items-center justify-between text-[11px] pt-1.5 border-t border-white/5">
-          <span className={cn('text-[10px] font-mono', isUser ? 'text-indigo-200' : 'text-slate-500')}>
+        <div className="mt-2.5 flex items-center justify-between text-[11px] pt-1.5 border-t border-[#FAF5EE]">
+          <span className={cn('text-[10px] font-mono', isUser ? 'text-[#847174]' : 'text-[#9E8B8E]')}>
             {isUser ? formattedTime : 'Verified Academic Guidance'}
           </span>
 
@@ -256,15 +260,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             className={cn(
               'opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] transition-all cursor-pointer',
               isUser
-                ? 'text-indigo-200 hover:bg-indigo-800 hover:text-white'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                ? 'text-[#63493E] hover:bg-[#EBDCCF] hover:text-[#2A1B1E]'
+                : 'text-[#786568] hover:bg-[#FAF5EE] hover:text-[#800020]'
             )}
             title="Copy message"
           >
             {copied ? (
               <>
-                <Check className="h-3 w-3 text-emerald-400" />
-                <span className="text-emerald-400">Copied</span>
+                <Check className="h-3 w-3 text-[#800020]" />
+                <span className="text-[#800020]">Copied</span>
               </>
             ) : (
               <>

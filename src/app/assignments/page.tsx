@@ -15,7 +15,7 @@ import {
   CheckSquare,
   Clock,
   AlertTriangle,
-  Bot,
+  Sparkles,
   Plus,
   CheckCircle,
   Circle,
@@ -38,7 +38,6 @@ export default function AssignmentsPage() {
       setAssignments(json.data || mockAssignments);
     } catch (err) {
       console.warn('Assignments fetch failed, using fallback:', err);
-      // Fallback
       setAssignments(
         filter === 'ALL'
           ? mockAssignments
@@ -96,16 +95,16 @@ export default function AssignmentsPage() {
 
         {/* Filter Bar & Add Button */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/60 p-1">
-            <Filter className="h-4 w-4 text-slate-400 ml-2 mr-1" />
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#EDE1D3] bg-white p-1 shadow-2xs">
+            <Filter className="h-4 w-4 text-[#9E8B8E] ml-2 mr-1" />
             {filterTabs.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setFilter(tab.value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                   filter === tab.value
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#F3E6D5] text-[#5C0017] font-semibold border border-[#E8D9C8]'
+                    : 'text-[#786568] hover:text-[#2A1B1E]'
                 }`}
               >
                 {tab.label}
@@ -165,7 +164,7 @@ export default function AssignmentsPage() {
                   key={assignment.id}
                   hoverEffect
                   className={`transition-all ${
-                    isCompleted ? 'opacity-70 bg-slate-900/30' : 'bg-slate-900/60'
+                    isCompleted ? 'opacity-70 bg-[#FAF5EE]/70' : 'bg-white'
                   }`}
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -173,11 +172,11 @@ export default function AssignmentsPage() {
                     <div className="flex items-start gap-3.5 min-w-0 flex-1">
                       <button
                         onClick={() => toggleStatus(assignment.id)}
-                        className="mt-1 text-slate-500 hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
+                        className="mt-1 text-[#9E8B8E] hover:text-[#800020] transition-colors cursor-pointer shrink-0"
                         aria-label="Toggle completion"
                       >
                         {isCompleted ? (
-                          <CheckCircle className="h-5 w-5 text-emerald-400" />
+                          <CheckCircle className="h-5 w-5 text-[#800020]" />
                         ) : (
                           <Circle className="h-5 w-5" />
                         )}
@@ -186,16 +185,16 @@ export default function AssignmentsPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span
-                            className="rounded-md px-1.5 py-0.5 text-[10px] font-bold"
+                            className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
                             style={{
-                              backgroundColor: `${assignment.colorHex || '#6366f1'}20`,
-                              color: assignment.colorHex || '#818cf8',
-                              border: `1px solid ${assignment.colorHex || '#6366f1'}40`,
+                              backgroundColor: '#FBECEF',
+                              color: '#800020',
+                              border: '1px solid #F8CCD2',
                             }}
                           >
                             {assignment.courseCode}
                           </span>
-                          <span className="text-xs text-slate-400">{assignment.courseName}</span>
+                          <span className="text-xs text-[#786568]">{assignment.courseName}</span>
 
                           {/* Priority */}
                           <span
@@ -208,21 +207,21 @@ export default function AssignmentsPage() {
 
                         <h3
                           className={`text-base font-semibold ${
-                            isCompleted ? 'line-through text-slate-400' : 'text-white'
+                            isCompleted ? 'line-through text-[#9E8B8E]' : 'text-[#2A1B1E]'
                           }`}
                         >
                           {assignment.title}
                         </h3>
 
                         {assignment.description && (
-                          <p className="mt-1 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                          <p className="mt-1 text-xs text-[#786568] line-clamp-2 leading-relaxed">
                             {assignment.description}
                           </p>
                         )}
 
-                        <div className="mt-2.5 flex items-center gap-4 text-xs text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-slate-500" />
+                        <div className="mt-2.5 flex items-center gap-4 text-xs text-[#786568]">
+                          <span className="flex items-center gap-1 font-mono text-[11px]">
+                            <Clock className="h-3.5 w-3.5 text-[#9E8B8E]" />
                             Due: {formatDate(assignment.dueDate)}
                           </span>
                           {assignment.totalPoints && (
@@ -235,7 +234,7 @@ export default function AssignmentsPage() {
                     {/* Right: Days remaining + Ask AI Agent button */}
                     <div className="flex items-center gap-2.5 md:self-center shrink-0">
                       <Badge
-                        variant={deadline.isOverdue ? 'danger' : deadline.days <= 2 ? 'warning' : 'default'}
+                        variant={deadline.isOverdue ? 'rose' : deadline.days <= 2 ? 'burgundy' : 'cream'}
                         className="font-mono text-xs"
                       >
                         {deadline.label}
@@ -245,9 +244,9 @@ export default function AssignmentsPage() {
                         variant="secondary"
                         size="sm"
                         onClick={() => handleAskAI(assignment.title, assignment.courseCode)}
-                        className="gap-1.5 text-xs border-indigo-500/30 text-indigo-300 hover:text-white"
+                        className="gap-1.5 text-xs"
                       >
-                        <Bot className="h-3.5 w-3.5 text-indigo-400" />
+                        <Sparkles className="h-3.5 w-3.5 text-[#800020]" />
                         <span>Breakdown</span>
                       </Button>
                     </div>

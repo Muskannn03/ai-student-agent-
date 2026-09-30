@@ -25,7 +25,7 @@ export function UpcomingAssignments({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckSquare className="h-5 w-5 text-indigo-400" />
+            <CheckSquare className="h-5 w-5 text-[#7FA99B]" />
             Upcoming Assignments
           </CardTitle>
         </CardHeader>
@@ -43,13 +43,13 @@ export function UpcomingAssignments({
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
             <CheckSquare className="h-4.5 w-4.5" />
           </div>
           <div>
             <CardTitle className="text-base">Upcoming Assignments</CardTitle>
-            <p className="text-xs text-slate-400">Sorted by urgency and due date</p>
+            <p className="text-xs text-[#786568]">Sorted by urgency and due date</p>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export function UpcomingAssignments({
           {onOpenAddModal && (
             <button
               onClick={onOpenAddModal}
-              className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-semibold text-slate-200 hover:border-indigo-500/60 hover:text-white transition-all cursor-pointer"
+              className="flex items-center gap-1 rounded-xl border border-[#EDE1D3] bg-white px-2.5 py-1 text-xs font-semibold text-[#5C4549] hover:border-[#D45060]/40 hover:bg-[#FAF5EE] hover:text-[#800020] transition-all cursor-pointer shadow-2xs"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add</span>
@@ -66,9 +66,9 @@ export function UpcomingAssignments({
 
           <Link
             href="/assignments"
-            className="flex items-center gap-1 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-[#5C4549] hover:text-[#800020] transition-colors"
           >
-            View all <ArrowRight className="h-3.5 w-3.5" />
+            View all <ArrowRight className="h-3.5 w-3.5 text-[#800020]" />
           </Link>
         </div>
       </CardHeader>
@@ -84,8 +84,8 @@ export function UpcomingAssignments({
             <div
               key={assignment.id}
               className={cn(
-                'group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80',
-                isCompleted && 'opacity-60 bg-slate-950/40'
+                'group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-2xl border border-[#EDE1D3] bg-[#FAF5EE]/40 p-4 transition-all duration-200 hover:border-[#D45060]/40 hover:bg-white shadow-2xs',
+                isCompleted && 'opacity-65 bg-[#FAF5EE]/70'
               )}
             >
               {/* Left: Checkbox + Subject & Title + Due Date */}
@@ -93,21 +93,21 @@ export function UpcomingAssignments({
                 {onToggleStatus ? (
                   <button
                     onClick={() => onToggleStatus(assignment.id)}
-                    className="mt-0.5 text-slate-500 hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
+                    className="mt-0.5 text-[#9E8B8E] hover:text-[#800020] transition-colors cursor-pointer shrink-0"
                     aria-label="Toggle completed"
                   >
                     {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                      <CheckCircle2 className="h-5 w-5 text-[#800020]" />
                     ) : (
-                      <Circle className="h-5 w-5 text-slate-500 group-hover:text-indigo-400" />
+                      <Circle className="h-5 w-5 text-[#9E8B8E] group-hover:text-[#800020]" />
                     )}
                   </button>
                 ) : (
                   <div className="mt-0.5 shrink-0">
                     {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                      <CheckCircle2 className="h-5 w-5 text-[#800020]" />
                     ) : (
-                      <Circle className="h-5 w-5 text-slate-500" />
+                      <Circle className="h-5 w-5 text-[#9E8B8E]" />
                     )}
                   </div>
                 )}
@@ -116,16 +116,16 @@ export function UpcomingAssignments({
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     {/* Subject badge */}
                     <span
-                      className="rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide"
+                      className="rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide"
                       style={{
-                        backgroundColor: `${assignment.colorHex || '#6366f1'}20`,
-                        color: assignment.colorHex || '#818cf8',
-                        border: `1px solid ${assignment.colorHex || '#6366f1'}40`,
+                        backgroundColor: '#FBECEF',
+                        color: '#800020',
+                        border: '1px solid #F8CCD2',
                       }}
                     >
                       {assignment.courseCode}
                     </span>
-                    <span className="text-xs text-slate-400 truncate">{assignment.courseName}</span>
+                    <span className="text-xs text-[#786568] truncate">{assignment.courseName}</span>
 
                     {/* Status Pill */}
                     <span
@@ -142,16 +142,16 @@ export function UpcomingAssignments({
 
                   <h4
                     className={cn(
-                      'text-sm font-semibold text-slate-200 group-hover:text-white transition-colors truncate',
-                      isCompleted && 'line-through text-slate-500'
+                      'text-sm font-semibold text-[#2A1B1E] group-hover:text-[#800020] transition-colors truncate',
+                      isCompleted && 'line-through text-[#9E8B8E]'
                     )}
                   >
                     {assignment.title}
                   </h4>
 
-                  <div className="mt-1.5 flex items-center gap-3 text-xs text-slate-400">
-                    <span className="flex items-center gap-1 font-mono text-[11px]">
-                      <Clock className="h-3 w-3 text-slate-500" />
+                  <div className="mt-1.5 flex items-center gap-3 text-xs text-[#786568]">
+                    <span suppressHydrationWarning className="flex items-center gap-1 font-mono text-[11px]">
+                      <Clock className="h-3 w-3 text-[#9E8B8E]" />
                       Due {formatDate(assignment.dueDate)}
                     </span>
                   </div>
@@ -163,7 +163,7 @@ export function UpcomingAssignments({
                 {/* Priority Badge */}
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold border',
+                    'inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold border',
                     priorityColor.bg,
                     priorityColor.text,
                     priorityColor.border
@@ -175,7 +175,7 @@ export function UpcomingAssignments({
 
                 {/* Days remaining tag */}
                 <Badge
-                  variant={deadline.isOverdue ? 'danger' : deadline.days <= 2 ? 'warning' : 'default'}
+                  variant={deadline.isOverdue ? 'rose' : deadline.days <= 2 ? 'burgundy' : 'default'}
                   className="font-mono text-xs"
                 >
                   {deadline.label}

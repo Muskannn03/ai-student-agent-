@@ -13,6 +13,7 @@ export function formatDate(dateString: string): string {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC',
     }).format(date);
   } catch {
     return dateString;
@@ -20,7 +21,6 @@ export function formatDate(dateString: string): string {
 }
 
 export function formatTime(timeStr: string): string {
-  // Accepts "14:00" and formats to "2:00 PM"
   if (!timeStr) return '';
   const [hours, minutes] = timeStr.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
@@ -49,25 +49,25 @@ export function getDaysRemaining(dueDateStr: string): { days: number; isOverdue:
 export function getPriorityColor(priority: Priority): { bg: string; text: string; border: string; dot: string } {
   switch (priority) {
     case 'URGENT':
-      return { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/20', dot: 'bg-rose-500' };
+      return { bg: 'bg-[#FDF2F3]', text: 'text-[#A62B3A]', border: 'border-[#F8CCD2]', dot: 'bg-[#D45060]' };
     case 'HIGH':
-      return { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20', dot: 'bg-amber-500' };
+      return { bg: 'bg-[#FDF6ED]', text: 'text-[#8C6228]', border: 'border-[#F4E3C8]', dot: 'bg-[#C99042]' };
     case 'MEDIUM':
-      return { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20', dot: 'bg-blue-500' };
+      return { bg: 'bg-[#FBECEF]', text: 'text-[#800020]', border: 'border-[#F4CDD5]', dot: 'bg-[#800020]' };
     case 'LOW':
     default:
-      return { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20', dot: 'bg-emerald-500' };
+      return { bg: 'bg-[#F5ECE1]', text: 'text-[#63493E]', border: 'border-[#E5D7C6]', dot: 'bg-[#9C7F72]' };
   }
 }
 
 export function getStatusColor(status: Status): { bg: string; text: string; border: string } {
   switch (status) {
     case 'COMPLETED':
-      return { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' };
+      return { bg: 'bg-[#EAF2ED]', text: 'text-[#2F6144]', border: 'border-[#CCE0D4]' };
     case 'IN_PROGRESS':
-      return { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' };
+      return { bg: 'bg-[#FBECEF]', text: 'text-[#800020]', border: 'border-[#F4CDD5]' };
     case 'PENDING':
     default:
-      return { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20' };
+      return { bg: 'bg-[#F5ECE1]', text: 'text-[#63493E]', border: 'border-[#E5D7C6]' };
   }
 }

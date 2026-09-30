@@ -44,26 +44,25 @@ export function AIAssistantCard() {
 
   return (
     <Card
-      glow
-      className="relative overflow-hidden border-indigo-500/30 bg-gradient-to-br from-slate-900 via-indigo-950/40 to-slate-900 p-6 md:p-8"
+      className="relative overflow-hidden border border-[#EDE1D3] bg-gradient-to-br from-white via-[#FAF5EE] to-[#FBECEF] p-6 md:p-8 shadow-[0_2px_12px_rgba(42,27,30,0.03)]"
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         {/* Left: Headline & AI Agent Badge */}
-        <div className="space-y-2 max-w-2xl">
+        <div className="space-y-2.5 max-w-2xl">
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
+            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 text-xs font-semibold text-indigo-300 border border-indigo-500/30">
+            <span className="rounded-full bg-[#FBECEF] px-2.5 py-0.5 text-xs font-semibold text-[#800020] border border-[#F8CCD2]">
               Academic Agent Co-Pilot
             </span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#2A1B1E]">
             What do you want to study today?
           </h2>
 
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#786568] leading-relaxed">
             Get step-by-step conceptual breakdowns, active recall quizzes, and project milestones tailored to your enrolled coursework.
           </p>
         </div>
@@ -73,7 +72,7 @@ export function AIAssistantCard() {
           <Button
             size="lg"
             onClick={() => handleStartChat()}
-            className="w-full sm:w-auto gap-2 shadow-xl shadow-indigo-500/20 px-6"
+            className="w-full sm:w-auto gap-2 px-6"
           >
             <MessageSquare className="h-4.5 w-4.5" />
             <span>Open AI Chat Tutor</span>
@@ -95,7 +94,7 @@ export function AIAssistantCard() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Ask a question, enter a topic, or describe an assignment problem..."
-          className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 px-4.5 py-3.5 pr-32 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all shadow-inner"
+          className="w-full rounded-2xl border border-[#EDE1D3] bg-white px-4.5 py-3.5 pr-28 text-xs sm:text-sm text-[#2A1B1E] placeholder:text-[#9E8B8E] focus:border-[#800020] focus:outline-none focus:ring-2 focus:ring-[#800020]/15 transition-all shadow-xs"
         />
         <Button
           type="submit"
@@ -109,8 +108,8 @@ export function AIAssistantCard() {
 
       {/* Suggestion Chips */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 mr-1">
-          <Lightbulb className="h-3 w-3 text-amber-400" />
+        <span className="text-[11px] font-semibold text-[#786568] flex items-center gap-1 mr-1">
+          <Lightbulb className="h-3.5 w-3.5 text-[#D45060]" />
           Suggested:
         </span>
 
@@ -121,9 +120,9 @@ export function AIAssistantCard() {
               key={idx}
               type="button"
               onClick={() => handleStartChat(item.prompt)}
-              className="group flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300 hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-white transition-all cursor-pointer"
+              className="group flex items-center gap-1.5 rounded-xl border border-[#EDE1D3] bg-white px-3 py-1.5 text-xs text-[#5C4549] hover:border-[#D45060]/40 hover:bg-[#FAF5EE] hover:text-[#800020] transition-all cursor-pointer shadow-2xs"
             >
-              <Icon className="h-3 w-3 text-slate-400 group-hover:text-indigo-400 transition-colors" />
+              <Icon className="h-3 w-3 text-[#800020] group-hover:text-[#6A001B] transition-colors" />
               <span>{item.label}</span>
             </button>
           );

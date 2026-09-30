@@ -130,3 +130,4 @@ All project documentation is compiled and available in the repository:
 - 📊 [`docs/PRESENTATION.md`](file:///c:/Users/ASUS/OneDrive/Desktop/ai-student-agent/docs/PRESENTATION.md) — 12-slide project presentation deck
 - 🎓 [`docs/VIVA_QUESTIONS.md`](file:///c:/Users/ASUS/OneDrive/Desktop/ai-student-agent/docs/VIVA_QUESTIONS.md) — Technical viva voce and oral examination questions & answers
 - ✅ [`PHASE_7_5_VERIFICATION_REPORT.md`](file:///c:/Users/ASUS/OneDrive/Desktop/ai-student-agent/PHASE_7_5_VERIFICATION_REPORT.md) — Automated verification report (24/24 passed)
+- 🎨 [`PHASE_8_UI_REDESIGN_REPORT.md`](file:///c:/Users/ASUS/OneDrive/Desktop/ai-student-agent/PHASE_8_UI_REDESIGN_REPORT.md) — Color Hunt palette (#800020, #F3E6D5, #FFF9F2, #D45060) UI redesign report

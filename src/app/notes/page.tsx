@@ -15,7 +15,6 @@ import {
   Upload,
   FileText,
   Trash2,
-  Bot,
   CheckCircle2,
   AlertCircle,
   FileCheck,
@@ -37,7 +36,7 @@ interface NoteItem {
   isUploadedPdf?: boolean;
 }
 
-export default function NotesPage() {
+export function NotesPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -165,48 +164,46 @@ export default function NotesPage() {
     >
       <div className="space-y-8 max-w-7xl mx-auto">
         {/* Top: PDF Upload Card */}
-        <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl">
-          <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-3xl border border-[#EDE1D3] bg-white p-6 md:p-8 shadow-[0_2px_12px_rgba(42,27,30,0.03)]">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="max-w-xl">
-              <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">
-                <Sparkles className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-[#800020] text-xs font-semibold uppercase tracking-wider mb-2">
+                <Sparkles className="h-4 w-4 text-[#800020]" />
                 <span>RAG Knowledge Base Ingestion</span>
               </div>
-              <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+              <h2 className="text-xl md:text-2xl font-semibold text-[#2A1B1E] tracking-tight">
                 Upload Course Notes & PDF Documents
               </h2>
-              <p className="text-xs md:text-sm text-slate-400 mt-1 leading-relaxed">
+              <p className="text-xs md:text-sm text-[#786568] mt-1.5 leading-relaxed">
                 PDFs are automatically sanitized, split into semantic overlapping chunks, embedded into vector representations, and indexed in PostgreSQL for instantaneous semantic retrieval.
               </p>
             </div>
 
             {/* Upload Status / Quick Stats */}
-            <div className="flex items-center gap-4 bg-slate-950/60 border border-slate-800/80 px-4 py-3 rounded-2xl">
+            <div className="flex items-center gap-4 bg-[#FAF5EE] border border-[#EDE1D3] px-4 py-3 rounded-2xl shadow-2xs">
               <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-emerald-400" />
+                <Database className="h-4 w-4 text-[#800020]" />
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-mono">Storage Engine</p>
-                  <p className="text-xs font-bold text-slate-200">PostgreSQL Vector</p>
+                  <p className="text-[10px] text-[#9E8B8E] uppercase font-mono">Storage Engine</p>
+                  <p className="text-xs font-semibold text-[#2A1B1E]">PostgreSQL Vector</p>
                 </div>
               </div>
-              <div className="h-6 w-px bg-slate-800" />
+              <div className="h-6 w-px bg-[#EDE1D3]" />
               <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-indigo-400" />
+                <Layers className="h-4 w-4 text-[#D45060]" />
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-mono">Indexed Documents</p>
-                  <p className="text-xs font-bold text-slate-200">{notes.length} Total</p>
+                  <p className="text-[10px] text-[#9E8B8E] uppercase font-mono">Indexed Documents</p>
+                  <p className="text-xs font-semibold text-[#2A1B1E]">{notes.length} Total</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Upload Form */}
-          <form onSubmit={handleUploadSubmit} className="mt-6 pt-6 border-t border-slate-800/80 space-y-4">
+          <form onSubmit={handleUploadSubmit} className="mt-6 pt-6 border-t border-[#EDE1D3] space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* File Selector */}
-              <div className="flex flex-col justify-center border-2 border-dashed border-slate-800 hover:border-indigo-500/50 bg-slate-950/40 rounded-2xl p-4 text-center cursor-pointer transition-all">
+              <div className="flex flex-col justify-center border-2 border-dashed border-[#EDE1D3] hover:border-[#D45060]/40 bg-[#FAF5EE]/50 rounded-2xl p-4 text-center cursor-pointer transition-all">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -217,14 +214,14 @@ export default function NotesPage() {
                   disabled={isUploading}
                 />
                 <label htmlFor="pdf-upload-input" className="cursor-pointer space-y-2">
-                  <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
-                    {selectedFile ? <FileCheck className="h-5 w-5 text-emerald-400" /> : <Upload className="h-5 w-5" />}
+                  <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-xl bg-[#FBECEF] text-[#800020]">
+                    {selectedFile ? <FileCheck className="h-5 w-5 text-[#800020]" /> : <Upload className="h-5 w-5" />}
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-slate-200 truncate">
+                    <p className="text-xs font-medium text-[#2A1B1E] truncate">
                       {selectedFile ? selectedFile.name : 'Select or drop PDF notes'}
                     </p>
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-[10px] text-[#9E8B8E]">
                       {selectedFile ? formatFileSize(selectedFile.size) : 'PDF format up to 15MB'}
                     </p>
                   </div>
@@ -233,25 +230,25 @@ export default function NotesPage() {
 
               {/* Title Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Document Title</label>
+                <label className="text-xs font-semibold text-[#2A1B1E]">Document Title</label>
                 <input
                   type="text"
                   value={docTitle}
                   onChange={(e) => setDocTitle(e.target.value)}
                   placeholder="e.g. Graph Algorithms & Dijkstra Proofs"
                   disabled={isUploading}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3.5 py-2.5 text-xs text-[#2A1B1E] placeholder:text-[#9E8B8E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
                 />
               </div>
 
               {/* Subject Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Course / Subject</label>
+                <label className="text-xs font-semibold text-[#2A1B1E]">Course / Subject</label>
                 <select
                   value={docSubject}
                   onChange={(e) => setDocSubject(e.target.value)}
                   disabled={isUploading}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3.5 py-2.5 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
                 >
                   <option value="Algorithms & Proofs (CS301)">Algorithms & Proofs (CS301)</option>
                   <option value="Deep Learning Architecture (AI402)">Deep Learning Architecture (AI402)</option>
@@ -264,21 +261,21 @@ export default function NotesPage() {
 
             {/* Feedback Banners */}
             {uploadStep && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-950/30 border border-indigo-500/30 text-indigo-300 text-xs">
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FBECEF] border border-[#F8CCD2] text-[#800020] text-xs">
                 <LoadingSpinner size="sm" />
                 <span>{uploadStep}</span>
               </div>
             )}
 
             {uploadSuccess && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-xs">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FAF5EE] border border-[#EDE1D3] text-[#800020] text-xs">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#800020]" />
                 <span>{uploadSuccess}</span>
               </div>
             )}
 
             {uploadError && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-950/30 border border-rose-500/30 text-rose-300 text-xs">
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FDF2F3] border border-[#F8CCD2] text-[#D45060] text-xs">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{uploadError}</span>
               </div>
@@ -302,18 +299,18 @@ export default function NotesPage() {
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9E8B8E]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search indexed notes by topic or course..."
-              className="w-full rounded-xl border border-slate-800 bg-slate-900/60 py-2.5 pl-10 pr-4 text-xs text-slate-200 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+              className="w-full rounded-xl border border-[#EDE1D3] bg-white py-2.5 pl-10 pr-4 text-xs text-[#2A1B1E] placeholder:text-[#9E8B8E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30 transition-all shadow-2xs"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="purple" className="text-xs font-mono">
+            <Badge variant="burgundy" className="text-xs font-mono">
               {notes.length} Documents Ready for RAG
             </Badge>
           </div>
@@ -335,27 +332,27 @@ export default function NotesPage() {
             {notes.map((note) => (
               <Card
                 key={note.id}
-                className="group relative flex flex-col justify-between hover:border-indigo-500/50 transition-all duration-300"
+                className="group relative flex flex-col justify-between hover:border-[#D45060]/40 transition-all duration-200"
               >
                 <div>
                   <CardHeader className="p-5 pb-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
-                        <FileText className="h-5 w-5" />
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
+                        <FileText className="h-4.5 w-4.5" />
                       </div>
-                      <Badge variant="purple" className="text-[10px]">
+                      <Badge variant="cream" className="text-[10px]">
                         {note.courseName || 'Coursework'}
                       </Badge>
                     </div>
 
-                    <CardTitle className="text-sm font-bold text-white mt-3 line-clamp-2">
+                    <CardTitle className="text-sm font-semibold text-[#2A1B1E] mt-3 line-clamp-2">
                       {note.title}
                     </CardTitle>
                   </CardHeader>
 
                   <div className="px-5 pb-4 space-y-3">
                     {/* Meta stats */}
-                    <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+                    <div className="flex items-center gap-3 text-[11px] text-[#786568] font-mono">
                       <span>{note.pageCount || 1} Pages</span>
                       <span>•</span>
                       <span>{note.chunkCount || 4} Chunks</span>
@@ -368,7 +365,7 @@ export default function NotesPage() {
                       {note.tags?.map((t, idx) => (
                         <span
                           key={idx}
-                          className="rounded-md bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400 border border-slate-700/60"
+                          className="rounded-md bg-[#FAF5EE] px-2 py-0.5 text-[10px] font-medium text-[#5C4549] border border-[#EDE1D3]"
                         >
                           {t}
                         </span>
@@ -378,10 +375,10 @@ export default function NotesPage() {
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="flex items-center justify-between p-4 bg-slate-950/60 border-t border-slate-800/80 rounded-b-2xl">
+                <div className="flex items-center justify-between p-4 bg-[#FAF5EE]/60 border-t border-[#EDE1D3] rounded-b-2xl">
                   <button
                     onClick={() => handleDeleteDocument(note.id)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+                    className="p-1.5 rounded-lg text-[#9E8B8E] hover:text-[#D45060] hover:bg-[#FDF2F3] transition-colors cursor-pointer"
                     title="Delete document"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -393,7 +390,7 @@ export default function NotesPage() {
                     onClick={() => handleChatWithNote(note)}
                     className="gap-1.5 text-xs py-1.5 px-3"
                   >
-                    <Bot className="h-3.5 w-3.5" />
+                    <Sparkles className="h-3.5 w-3.5" />
                     <span>Ask AI About Note</span>
                     <ArrowRight className="h-3 w-3" />
                   </Button>
@@ -406,3 +403,5 @@ export default function NotesPage() {
     </AppShell>
   );
 }
+
+export default NotesPage;

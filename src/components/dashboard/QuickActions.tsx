@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Bot, CalendarPlus, Upload, PlusCircle, ArrowUpRight } from 'lucide-react';
+import { Sparkles, CalendarPlus, Upload, PlusCircle, ArrowUpRight } from 'lucide-react';
 
 interface QuickActionsProps {
   onOpenAddAssignmentModal?: () => void;
@@ -19,11 +19,8 @@ export function QuickActions({
       label: 'Ask AI Agent',
       description: 'Get step-by-step tutoring & explanations',
       href: '/chat',
-      icon: Bot,
-      color: 'indigo',
-      borderStyle: 'border-indigo-500/30 hover:border-indigo-500/60',
-      bgGradient: 'from-indigo-600/20 via-indigo-950/20 to-slate-900/60',
-      iconBg: 'bg-indigo-500/20 text-indigo-300',
+      icon: Sparkles,
+      iconBg: 'bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]',
     },
     {
       id: 'create-plan',
@@ -31,10 +28,7 @@ export function QuickActions({
       description: 'Generate weekly exam revision sprint',
       href: '/study-plan',
       icon: CalendarPlus,
-      color: 'violet',
-      borderStyle: 'border-violet-500/30 hover:border-violet-500/60',
-      bgGradient: 'from-violet-600/20 via-violet-950/20 to-slate-900/60',
-      iconBg: 'bg-violet-500/20 text-violet-300',
+      iconBg: 'bg-[#F5ECE1] text-[#800020] border border-[#E8D9C8]',
     },
     {
       id: 'upload-notes',
@@ -43,10 +37,7 @@ export function QuickActions({
       href: '/notes',
       onClick: onOpenUploadNotesModal,
       icon: Upload,
-      color: 'teal',
-      borderStyle: 'border-teal-500/30 hover:border-teal-500/60',
-      bgGradient: 'from-teal-600/20 via-teal-950/20 to-slate-900/60',
-      iconBg: 'bg-teal-500/20 text-teal-300',
+      iconBg: 'bg-[#FAF5EE] text-[#5C4549] border border-[#EDE1D3]',
     },
     {
       id: 'add-assignment',
@@ -55,20 +46,17 @@ export function QuickActions({
       href: '/assignments',
       onClick: onOpenAddAssignmentModal,
       icon: PlusCircle,
-      color: 'amber',
-      borderStyle: 'border-amber-500/30 hover:border-amber-500/60',
-      bgGradient: 'from-amber-600/20 via-amber-950/20 to-slate-900/60',
-      iconBg: 'bg-amber-500/20 text-amber-300',
+      iconBg: 'bg-[#FDF2F3] text-[#D45060] border border-[#F8CCD2]',
     },
   ];
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#786568]">
           Quick Actions
         </h2>
-        <span className="text-xs text-slate-500">Fast Academic Workflows</span>
+        <span className="text-xs text-[#9E8B8E]">Academic Workflows</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -81,19 +69,19 @@ export function QuickActions({
                 key={act.id}
                 onClick={act.onClick}
                 type="button"
-                className={`group flex items-start gap-3.5 rounded-2xl border bg-gradient-to-br p-4 text-left backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-xl cursor-pointer ${act.borderStyle} ${act.bgGradient}`}
+                className="group flex items-start gap-3.5 rounded-2xl border border-[#EDE1D3] bg-white p-4 text-left shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D45060]/40 hover:bg-[#FAF5EE]/30 hover:shadow-xs cursor-pointer"
               >
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${act.iconBg} shadow-inner`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${act.iconBg}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-white group-hover:text-indigo-200 transition-colors">
+                    <span className="text-sm font-semibold text-[#2A1B1E] group-hover:text-[#800020] transition-colors">
                       {act.label}
                     </span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-500 group-hover:text-white transition-all transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    <ArrowUpRight className="h-3.5 w-3.5 text-[#9E8B8E] group-hover:text-[#800020] transition-all transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </div>
-                  <p className="mt-1 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  <p className="mt-1 text-xs text-[#786568] line-clamp-2 leading-relaxed">
                     {act.description}
                   </p>
                 </div>
@@ -105,19 +93,19 @@ export function QuickActions({
             <Link
               key={act.id}
               href={act.href}
-              className={`group flex items-start gap-3.5 rounded-2xl border bg-gradient-to-br p-4 backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${act.borderStyle} ${act.bgGradient}`}
+              className="group flex items-start gap-3.5 rounded-2xl border border-[#EDE1D3] bg-white p-4 text-left shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D45060]/40 hover:bg-[#FAF5EE]/30 hover:shadow-xs"
             >
-              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${act.iconBg} shadow-inner`}>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${act.iconBg}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-white group-hover:text-indigo-200 transition-colors">
+                  <span className="text-sm font-semibold text-[#2A1B1E] group-hover:text-[#800020] transition-colors">
                     {act.label}
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-slate-500 group-hover:text-white transition-all transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-[#9E8B8E] group-hover:text-[#800020] transition-all transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
-                <p className="mt-1 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                <p className="mt-1 text-xs text-[#786568] line-clamp-2 leading-relaxed">
                   {act.description}
                 </p>
               </div>

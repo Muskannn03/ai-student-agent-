@@ -51,16 +51,15 @@ export function AddAssignmentModal({
       status: 'PENDING',
       colorHex:
         subject === 'CS301'
-          ? '#6366f1'
+          ? '#7FA99B'
           : subject === 'AI402'
-          ? '#ec4899'
+          ? '#D48D8D'
           : subject === 'DS205'
-          ? '#14b8a6'
-          : '#f59e0b',
+          ? '#8CAECC'
+          : '#E0B36E',
       totalPoints: 100,
     };
 
-    // Attempt to persist to API if available
     try {
       await fetch('/api/assignments', {
         method: 'POST',
@@ -86,26 +85,26 @@ export function AddAssignmentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-[#2A1B1E]/25 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl z-10 space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="relative w-full max-w-lg rounded-3xl border border-[#EDE1D3] bg-white p-6 shadow-xl z-10 space-y-5">
+        <div className="flex items-center justify-between border-b border-[#EDE1D3] pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2]">
               <Plus className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Add New Assignment</h3>
-              <p className="text-xs text-slate-400">Track tasks, due dates, and priority</p>
+              <h3 className="text-base font-semibold text-[#2A1B1E]">Add New Assignment</h3>
+              <p className="text-xs text-[#786568]">Track tasks, due dates, and priority</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white bg-slate-800/60"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-[#786568] hover:text-[#2A1B1E] bg-[#FAF5EE] border border-[#EDE1D3]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -113,7 +112,7 @@ export function AddAssignmentModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label className="text-xs font-semibold text-[#2A1B1E] block mb-1">
               Assignment Title *
             </label>
             <input
@@ -122,20 +121,20 @@ export function AddAssignmentModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Dynamic Programming Problem Set 3"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3.5 py-2.5 text-xs text-[#2A1B1E] placeholder:text-[#9E8B8E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1 flex items-center gap-1">
-                <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
+              <label className="text-xs font-semibold text-[#2A1B1E] block mb-1 flex items-center gap-1">
+                <BookOpen className="h-3.5 w-3.5 text-[#800020]" />
                 Course / Subject
               </label>
               <select
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3 py-2.5 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
               >
                 <option value="CS301">CS301 - Algorithms & Complexity</option>
                 <option value="AI402">AI402 - Deep Learning & Neural Nets</option>
@@ -145,14 +144,14 @@ export function AddAssignmentModal({
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1 flex items-center gap-1">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+              <label className="text-xs font-semibold text-[#2A1B1E] block mb-1 flex items-center gap-1">
+                <AlertTriangle className="h-3.5 w-3.5 text-[#D45060]" />
                 Priority
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3 py-2.5 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
               >
                 <option value="URGENT">Urgent (Due 24-48h)</option>
                 <option value="HIGH">High Priority</option>
@@ -163,8 +162,8 @@ export function AddAssignmentModal({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1 flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5 text-indigo-400" />
+            <label className="text-xs font-semibold text-[#2A1B1E] block mb-1 flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5 text-[#800020]" />
               Due Date
             </label>
             <input
@@ -172,12 +171,12 @@ export function AddAssignmentModal({
               required
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3.5 py-2 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label className="text-xs font-semibold text-[#2A1B1E] block mb-1">
               Description / Notes (Optional)
             </label>
             <textarea
@@ -185,11 +184,11 @@ export function AddAssignmentModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Key proofs, repository links, or requirements..."
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2 text-xs text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3.5 py-2 text-xs text-[#2A1B1E] placeholder:text-[#9E8B8E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EDE1D3]">
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
               Cancel
             </Button>

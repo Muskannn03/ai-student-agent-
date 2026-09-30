@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bot, Sparkles, Search, CheckSquare, Calendar, User, BookOpen } from 'lucide-react';
+import { Sparkles, Search, CheckSquare, Calendar, User } from 'lucide-react';
 
 interface LoadingIndicatorProps {
   status?: string;
@@ -47,7 +47,7 @@ export function LoadingIndicator({ status, queryHint }: LoadingIndicatorProps) {
 
   // Subtle step progression while waiting if no explicit status is streamed
   useEffect(() => {
-    if (status) return; // explicit status takes precedence
+    if (status) return;
     const interval = setInterval(() => {
       setCurrentStepIndex((prev) => (prev + 1) % DEFAULT_STATUS_STEPS.length);
     }, 2800);
@@ -60,21 +60,21 @@ export function LoadingIndicator({ status, queryHint }: LoadingIndicatorProps) {
   return (
     <div className="flex items-start gap-3.5 max-w-3xl animate-in fade-in duration-300">
       {/* Assistant Avatar */}
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-500/20">
-        <Bot className="h-5 w-5" />
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#FBECEF] text-[#800020] border border-[#F8CCD2] shadow-2xs">
+        <Sparkles className="h-4.5 w-4.5" />
       </div>
 
-      {/* Bubble with Shimmer and Status Indicator */}
-      <div className="rounded-2xl rounded-tl-sm border border-slate-800/80 bg-slate-900/90 px-4 py-3 shadow-xl backdrop-blur-md">
+      {/* Bubble with Gentle Status Indicator */}
+      <div className="rounded-2xl rounded-tl-sm border border-[#EDE1D3] bg-white px-4 py-3 shadow-[0_2px_8px_rgba(42,27,30,0.03)]">
         <div className="flex items-center gap-2.5">
-          <ActiveIcon className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
-          <span className="text-xs font-medium text-slate-300 transition-all duration-300">
+          <ActiveIcon className="h-3.5 w-3.5 text-[#800020] animate-pulse" />
+          <span className="text-xs font-medium text-[#5C4549] transition-all duration-300">
             {activeStatus}
           </span>
           <div className="flex items-center gap-1 ml-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.3s]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.15s]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-300 animate-bounce" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#800020] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#D45060] animate-pulse [animation-delay:200ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#E8A5AE] animate-pulse [animation-delay:400ms]" />
           </div>
         </div>
       </div>

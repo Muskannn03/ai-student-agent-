@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Student Agent | Modern Academic Co-Pilot',
+  title: 'AI Student Agent | Academic Study Space & Co-Pilot',
   description: 'AI-powered student agent for intelligent study planning, assignment tracking, course timetables, and academic tutoring.',
 };
 
@@ -25,9 +25,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-950 text-slate-100 flex flex-col font-sans">
+      <body className="min-h-full bg-[#FFF9F2] text-[#2A1B1E] flex flex-col font-sans">
         {children}
       </body>
     </html>

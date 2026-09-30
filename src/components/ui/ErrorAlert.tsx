@@ -19,25 +19,25 @@ export function ErrorAlert({
   return (
     <div
       className={cn(
-        'flex items-start gap-3.5 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4.5 text-rose-300 backdrop-blur-md',
+        'flex items-start gap-3.5 rounded-2xl border border-[#F8CCD2] bg-[#FDF2F3] p-4 text-[#2A1B1E]',
         className
       )}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
-        <AlertCircle className="h-5 w-5" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#FBD9DF] text-[#A62B3A]">
+        <AlertCircle className="h-4.5 w-4.5" />
       </div>
-      <div className="flex-1">
-        <h5 className="text-sm font-semibold text-rose-200">{title}</h5>
-        <p className="mt-0.5 text-xs text-rose-300/80 leading-relaxed">{message}</p>
+      <div className="flex-1 min-w-0">
+        <h5 className="text-xs sm:text-sm font-semibold text-[#800020]">{title}</h5>
+        <p className="mt-0.5 text-xs text-[#7A3642] leading-relaxed">{message}</p>
       </div>
       {onRetry && (
         <Button
           variant="outline"
           size="sm"
           onClick={onRetry}
-          className="border-rose-500/30 text-rose-300 hover:bg-rose-500/20 hover:text-white shrink-0"
+          className="border-[#F8CCD2] bg-white text-[#800020] hover:bg-[#FBD9DF] shrink-0"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="h-3 w-3" />
           Retry
         </Button>
       )}

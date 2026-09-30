@@ -11,21 +11,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading = false, children, disabled, ...props }, ref) => {
     const variantStyles = {
       primary:
-        'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-600 hover:to-violet-700 hover:shadow-indigo-500/35 border-0',
+        'bg-[#800020] hover:bg-[#6A001B] text-white shadow-xs border border-[#70001C] transition-all',
       secondary:
-        'bg-slate-800 text-slate-100 hover:bg-slate-700/80 border border-slate-700/60 shadow-sm',
+        'bg-white text-[#2A1B1E] hover:bg-[#FAF4EC] border border-[#EDE1D3] shadow-xs transition-all',
       outline:
-        'border border-slate-700/80 bg-transparent text-slate-300 hover:bg-slate-800/60 hover:text-white',
+        'border border-[#E0D2C2] bg-transparent text-[#2A1B1E] hover:bg-[#F3E6D5]/40 hover:border-[#D4BEA9] transition-all',
       ghost:
-        'bg-transparent text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 border-0',
+        'bg-transparent text-[#786568] hover:bg-[#F3E6D5]/40 hover:text-[#2A1B1E] border-0 transition-all',
       danger:
-        'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30',
+        'bg-[#FDF2F3] text-[#A62B3A] hover:bg-[#FCE3E7] border border-[#F8CCD2] transition-all',
     };
 
     const sizeStyles = {
-      sm: 'h-8 px-3 text-xs rounded-lg gap-1.5',
+      sm: 'h-8 px-3 text-xs rounded-xl gap-1.5',
       md: 'h-10 px-4 text-sm rounded-xl gap-2',
-      lg: 'h-12 px-6 text-base rounded-xl gap-2.5',
+      lg: 'h-12 px-6 text-base rounded-2xl gap-2.5',
       icon: 'h-10 w-10 p-0 rounded-xl justify-center',
     };
 
@@ -34,7 +34,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]',
+          'inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#800020]/40 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]',
           variantStyles[variant],
           sizeStyles[size],
           className

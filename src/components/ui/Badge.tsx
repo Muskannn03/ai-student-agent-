@@ -3,33 +3,39 @@ import { cn } from '@/lib/utils';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children: React.ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'purple' | 'outline';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'purple' | 'outline' | 'burgundy' | 'cream' | 'rose';
   dot?: boolean;
 }
 
 export function Badge({ children, className, variant = 'default', dot = false, ...props }: BadgeProps) {
   const variantStyles = {
-    default: 'bg-slate-800/80 text-slate-300 border-slate-700/60',
-    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    danger: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    purple: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-    outline: 'bg-transparent text-slate-300 border-slate-700',
+    default: 'bg-[#F5ECE1] text-[#63493E] border-[#E5D7C6]',
+    success: 'bg-[#EAF2ED] text-[#2F6144] border-[#CCE0D4]',
+    warning: 'bg-[#FDF6ED] text-[#8C6228] border-[#F4E3C8]',
+    danger: 'bg-[#FDF2F3] text-[#A62B3A] border-[#F8CCD2]',
+    purple: 'bg-[#FBECEF] text-[#800020] border-[#F4CDD5]',
+    outline: 'bg-transparent text-[#786568] border-[#EDE1D3]',
+    burgundy: 'bg-[#FBECEF] text-[#800020] border-[#F4CDD5]',
+    cream: 'bg-[#F5ECE1] text-[#63493E] border-[#E5D7C6]',
+    rose: 'bg-[#FDF2F3] text-[#D45060] border-[#F8CCD2]',
   };
 
   const dotColors = {
-    default: 'bg-slate-400',
-    success: 'bg-emerald-400',
-    warning: 'bg-amber-400',
-    danger: 'bg-rose-400',
-    purple: 'bg-indigo-400',
-    outline: 'bg-slate-400',
+    default: 'bg-[#9C7F72]',
+    success: 'bg-[#538E6E]',
+    warning: 'bg-[#C99042]',
+    danger: 'bg-[#D45060]',
+    purple: 'bg-[#800020]',
+    outline: 'bg-[#9C7F72]',
+    burgundy: 'bg-[#800020]',
+    cream: 'bg-[#800020]',
+    rose: 'bg-[#D45060]',
   };
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium backdrop-blur-sm',
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
         variantStyles[variant],
         className
       )}
