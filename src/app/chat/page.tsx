@@ -341,7 +341,7 @@ function ChatContainer() {
 export default function ChatPage() {
   return (
     <AppShell
-      title="AI Student Agent"
+      title="AISA-AI Student Agent"
       subtitle="Contextual academic mentorship, problem breakdown, and intelligent study companion"
     >
       <Suspense

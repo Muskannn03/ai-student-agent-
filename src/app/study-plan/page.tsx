@@ -121,7 +121,7 @@ export default function StudyPlanPage() {
                 <EmptyState
                   icon={CalendarRange}
                   title="No study tasks in this sprint"
-                  description="Add tasks manually or ask the AI Student Agent to synthesize a plan from your syllabus."
+                  description="Add tasks manually or ask AISA-AI Student Agent to synthesize a plan from your syllabus."
                 />
               ) : (
                 <div className="space-y-3">
@@ -170,7 +170,7 @@ export default function StudyPlanPage() {
               </div>
 
               <p className="text-xs text-[#786568] leading-relaxed">
-                Connect your syllabus and calendar. The AI Student Agent can automatically calibrate workload based on assignment due dates and study habits.
+                Connect your syllabus and calendar. AISA-AI Student Agent can automatically calibrate workload based on assignment due dates and study habits.
               </p>
 
               <div className="mt-4 space-y-2 text-xs">

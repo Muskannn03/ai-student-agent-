@@ -188,7 +188,7 @@ function buildSystemPrompt(context: AgentInput['context']): string {
   const course = context.course || 'Computer Science';
   const semester = context.semester ? `, Semester ${context.semester}` : '';
 
-  return `You are the AI Student Agent, an intelligent academic co-pilot for ${studentName} (${course}${semester}).
+  return `You are AISA (AI Student Agent), an intelligent academic co-pilot for ${studentName} (${course}${semester}).
 
 TOOL SYSTEM CAPABILITIES:
 You have access to tools to help the student manage their academic life:

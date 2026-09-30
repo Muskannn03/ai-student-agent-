@@ -19,7 +19,7 @@ export const env = {
   OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4o-mini',
 
   // App Config
-  APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'AI Student Agent',
+  APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'AISA-AI Student Agent',
   APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   NODE_ENV: process.env.NODE_ENV || 'development',
 

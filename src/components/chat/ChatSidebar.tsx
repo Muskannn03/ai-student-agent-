@@ -93,7 +93,7 @@ export function ChatSidebar({
               <h2 className="text-sm font-semibold text-[#2A1B1E] tracking-tight">
                 Study Sessions
               </h2>
-              <p className="text-[11px] text-[#786568]">AI Academic Assistant</p>
+              <p className="text-[11px] text-[#786568]">AISA Academic Assistant</p>
             </div>
           </div>
 

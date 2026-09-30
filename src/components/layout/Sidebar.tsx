@@ -44,9 +44,9 @@ export function Sidebar({ onCloseMobile }: SidebarProps) {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold tracking-tight text-[#2A1B1E]">AI Student</span>
+              <span className="font-bold tracking-tight text-[#800020] text-base">AISA</span>
               <span className="rounded-md bg-[#F3E6D5] px-1.5 py-0.5 text-[10px] font-semibold text-[#5C0017] border border-[#E2CEB9]">
-                Agent
+                AI Student Agent
               </span>
             </div>
             <p className="text-[11px] text-[#786568] font-medium">Academic Co-Pilot</p>

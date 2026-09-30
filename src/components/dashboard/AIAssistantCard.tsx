@@ -54,7 +54,7 @@ export function AIAssistantCard() {
               <Sparkles className="h-4 w-4" />
             </span>
             <span className="rounded-full bg-[#FBECEF] px-2.5 py-0.5 text-xs font-semibold text-[#800020] border border-[#F8CCD2]">
-              Academic Agent Co-Pilot
+              AISA - Academic Agent Co-Pilot
             </span>
           </div>
 

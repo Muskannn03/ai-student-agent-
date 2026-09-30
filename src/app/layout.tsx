@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Student Agent | Academic Study Space & Co-Pilot',
-  description: 'AI-powered student agent for intelligent study planning, assignment tracking, course timetables, and academic tutoring.',
+  title: 'AISA-AI Student Agent | Academic Study Space & Co-Pilot',
+  description: 'AISA-AI Student Agent for intelligent study planning, assignment tracking, course timetables, and academic tutoring.',
 };
 
 export default function RootLayout({

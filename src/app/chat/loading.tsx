@@ -3,7 +3,7 @@ import { SkeletonPulse } from '@/components/ui/LoadingSpinner';
 
 export default function ChatLoading() {
   return (
-    <AppShell title="AI Student Agent Chat" subtitle="Initializing conversational agent session...">
+    <AppShell title="AISA-AI Student Agent Chat" subtitle="Initializing conversational agent session...">
       <div className="flex flex-col h-[calc(100vh-12rem)] rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
         <SkeletonPulse className="h-12 w-full rounded-xl" />
         <div className="flex-1 space-y-4">

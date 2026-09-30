@@ -1,4 +1,4 @@
-# 🎓 AI Student Agent
+# 🎓 AISA — AI Student Agent
 
 An autonomous, full-stack academic co-pilot built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, **PostgreSQL**, **Prisma ORM**, and local AI execution powered by **Ollama** (**Llama 3.2** & **nomic-embed-text**).
 
@@ -6,7 +6,7 @@ An autonomous, full-stack academic co-pilot built with **Next.js (App Router)**,
 
 ## 1. Project Overview
 
-The **AI Student Agent** is an intelligent academic mentor and executive assistant tailored for university students. Rather than functioning as a generic request/response chatbot, it operates as an autonomous agent equipped with verified tool calling, semantic retrieval-augmented generation (RAG) over student-uploaded course notes, real-time PostgreSQL database querying, conversational memory with follow-up awareness, and progressive Server-Sent Events (SSE) streaming.
+**AISA-AI Student Agent** is an intelligent academic mentor and executive assistant tailored for university students. Rather than functioning as a generic request/response chatbot, it operates as an autonomous agent equipped with verified tool calling, semantic retrieval-augmented generation (RAG) over student-uploaded course notes, real-time PostgreSQL database querying, conversational memory with follow-up awareness, and progressive Server-Sent Events (SSE) streaming.
 
 ---
 

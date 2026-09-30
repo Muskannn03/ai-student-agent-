@@ -561,7 +561,7 @@ async function handleOfflineAgentWithTools(
   // 5. Default conceptual answer
   const studentName = profile?.name ? ` ${profile.name}` : '';
   return {
-    message: `### 🎓 Academic Assistant Mentorship\n\nHello${studentName}! I am your **AI Student Agent**, equipped with tools for:\n\n1. **📚 Notes Assistant (RAG)**: Search your uploaded PDF lecture notes and textbooks using semantic vectors.\n2. **🧮 Calculator**: Mathematical calculations, formulas, and GPA estimation.\n3. **📋 Assignments**: Live retrieval and filtering of your coursework from PostgreSQL.\n4. **📅 Study Plan Generator**: Custom Pomodoro schedules, revision sprints, and deadline balancing.\n\nHow would you like to proceed with **"${query}"**?`,
+    message: `### 🎓 Academic Assistant Mentorship\n\nHello${studentName}! I am your **AISA-AI Student Agent**, equipped with tools for:\n\n1. **📚 Notes Assistant (RAG)**: Search your uploaded PDF lecture notes and textbooks using semantic vectors.\n2. **🧮 Calculator**: Mathematical calculations, formulas, and GPA estimation.\n3. **📋 Assignments**: Live retrieval and filtering of your coursework from PostgreSQL.\n4. **📅 Study Plan Generator**: Custom Pomodoro schedules, revision sprints, and deadline balancing.\n\nHow would you like to proceed with **"${query}"**?`,
     isSimulated: true,
     model: 'offline-academic-simulator',
     toolCallsExecuted,

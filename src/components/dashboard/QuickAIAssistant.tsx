@@ -36,7 +36,7 @@ export function QuickAIAssistant() {
           </div>
           <div>
             <h3 className="text-base font-semibold text-[#2A1B1E] flex items-center gap-2">
-              AI Student Agent Co-Pilot
+              AISA-AI Student Agent Co-Pilot
               <span className="rounded-full bg-[#FBECEF] px-2 py-0.5 text-[10px] font-semibold text-[#800020] border border-[#F8CCD2]">
                 {process.env.NEXT_PUBLIC_AI_PROVIDER === 'openai' ? 'GPT-4o Ready' : 'Llama 3.2 Ready'}
               </span>
