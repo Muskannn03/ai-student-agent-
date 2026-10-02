@@ -24,6 +24,10 @@ function ChatContainer() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [agentStatus, setAgentStatus] = useState<string | undefined>(undefined);
 
+  // Synchronous guards to prevent double execution in React StrictMode and rapid double-clicks
+  const isSendingRef = React.useRef(false);
+  const processedPromptRef = React.useRef<string | null>(null);
+
   // 1. Fetch conversations list for sidebar
   const fetchConversations = useCallback(async () => {
     try {
@@ -51,14 +55,21 @@ function ChatContainer() {
       const data = await res.json();
 
       if (data.messages && Array.isArray(data.messages)) {
-        setMessages(
-          data.messages.map((m: any) => ({
-            id: m.id,
-            role: m.role as 'user' | 'assistant' | 'system',
-            content: m.content,
-            createdAt: m.createdAt,
-          }))
-        );
+        // Deduplicate messages by ID
+        const unique: MessageItem[] = [];
+        const seenIds = new Set<string>();
+        for (const m of data.messages) {
+          if (!seenIds.has(m.id)) {
+            seenIds.add(m.id);
+            unique.push({
+              id: m.id,
+              role: m.role as 'user' | 'assistant' | 'system',
+              content: m.content,
+              createdAt: m.createdAt,
+            });
+          }
+        }
+        setMessages(unique);
       }
     } catch (err) {
       console.error('Error loading conversation messages:', err);
@@ -68,31 +79,36 @@ function ChatContainer() {
     }
   }, []);
 
-  // Initial load
+  // Initial load: fetch conversations
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Load conversation if activeConversationId is provided
+  // Initial load: load conversation if queryConversationId is provided
   useEffect(() => {
-    if (activeConversationId) {
-      loadConversationMessages(activeConversationId);
+    if (queryConversationId) {
+      loadConversationMessages(queryConversationId);
     }
-  }, [activeConversationId, loadConversationMessages]);
+  }, [queryConversationId, loadConversationMessages]);
 
-  // Handle prompt query param if present on mount
+  // Handle prompt query param if present on mount (strictly execute ONCE)
   useEffect(() => {
-    if (queryPrompt && !activeConversationId) {
+    if (queryPrompt && !activeConversationId && processedPromptRef.current !== queryPrompt) {
+      processedPromptRef.current = queryPrompt;
+      // Clean query parameter from URL immediately to prevent re-triggering on navigation/remount
+      window.history.replaceState(null, '', '/chat');
       handleSendMessage(queryPrompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPrompt]);
+  }, [queryPrompt, activeConversationId]);
 
   // 3. Send Message Action connected to POST /api/chat with streaming support
   const handleSendMessage = async (overrideText?: string) => {
     const textToSend = (overrideText ?? inputValue).trim();
-    if (!textToSend || isLoading) return;
+    if (!textToSend || isSendingRef.current || isLoading) return;
 
+    // Lock synchronous guard
+    isSendingRef.current = true;
     setError(null);
 
     // Optimistically append user message to UI
@@ -261,6 +277,7 @@ function ChatContainer() {
       );
     } finally {
       setIsLoading(false);
+      isSendingRef.current = false;
       setAgentStatus(undefined);
     }
   };
@@ -271,6 +288,8 @@ function ChatContainer() {
     setMessages([]);
     setError(null);
     setInputValue('');
+    processedPromptRef.current = null;
+    isSendingRef.current = false;
     router.push('/chat');
   };
 
@@ -278,6 +297,7 @@ function ChatContainer() {
   const handleSelectConversation = (id: string) => {
     if (id === activeConversationId) return;
     setActiveConversationId(id);
+    loadConversationMessages(id);
     router.push(`/chat?conversationId=${encodeURIComponent(id)}`);
   };
 

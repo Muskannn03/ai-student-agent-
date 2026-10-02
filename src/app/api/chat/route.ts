@@ -3,6 +3,7 @@ import { prisma, testDatabaseConnection } from '@/lib/prisma';
 import { runAcademicAgent } from '@/lib/agent';
 import { ChatHistoryMessage } from '@/lib/ai/agent';
 import { MessageRole } from '@prisma/client';
+import { getAuthenticatedUser } from '@/lib/auth/auth';
 
 export async function GET(req: NextRequest) {
   try {
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const user = await prisma.user.findFirst();
+    const user = await getAuthenticatedUser(true);
     if (!user) {
       return NextResponse.json({ conversations: [] });
     }
@@ -135,7 +136,7 @@ export async function DELETE(req: NextRequest) {
 
     const isDbConnected = await testDatabaseConnection();
     if (isDbConnected) {
-      const user = await prisma.user.findFirst();
+      const user = await getAuthenticatedUser(true);
       if (user) {
         await prisma.chatSession.deleteMany({
           where: {
@@ -212,9 +213,7 @@ export async function POST(req: NextRequest) {
     if (isDbConnected) {
       try {
         // Retrieve or create default student user
-        let user = await prisma.user.findFirst({
-          include: { studentProfile: true },
-        });
+        let user = await getAuthenticatedUser(true);
 
         if (!user) {
           user = await prisma.user.create({
@@ -273,13 +272,37 @@ export async function POST(req: NextRequest) {
           const titleSnippet =
             userMessage.length > 40 ? `${userMessage.slice(0, 40)}...` : userMessage;
 
-          session = await prisma.chatSession.create({
-            data: {
+          // Check if an identical session was created in the last 10 seconds (debouncing duplicate requests)
+          const recentSession = await prisma.chatSession.findFirst({
+            where: {
               userId: user.id,
               title: titleSnippet,
+              createdAt: {
+                gte: new Date(Date.now() - 10000),
+              },
             },
-            include: { messages: true },
+            include: {
+              messages: {
+                orderBy: { createdAt: 'desc' },
+                take: 20,
+              },
+            },
           });
+
+          if (recentSession) {
+            session = recentSession;
+            if (session.messages) {
+              session.messages.reverse();
+            }
+          } else {
+            session = await prisma.chatSession.create({
+              data: {
+                userId: user.id,
+                title: titleSnippet,
+              },
+              include: { messages: true },
+            });
+          }
         }
 
         activeConversationId = session.id;
@@ -292,14 +315,29 @@ export async function POST(req: NextRequest) {
           }));
         }
 
-        // Persist User Message to PostgreSQL
-        await prisma.chatMessage.create({
-          data: {
+        // Avoid duplicate user message if already inserted within last 5 seconds
+        const lastUserMsg = await prisma.chatMessage.findFirst({
+          where: {
             chatSessionId: activeConversationId,
             role: MessageRole.USER,
-            content: userMessage,
           },
+          orderBy: { createdAt: 'desc' },
         });
+
+        const isDuplicateUserMsg =
+          lastUserMsg &&
+          lastUserMsg.content === userMessage &&
+          Date.now() - new Date(lastUserMsg.createdAt).getTime() < 5000;
+
+        if (!isDuplicateUserMsg) {
+          await prisma.chatMessage.create({
+            data: {
+              chatSessionId: activeConversationId,
+              role: MessageRole.USER,
+              content: userMessage,
+            },
+          });
+        }
       } catch (dbError) {
         console.error('[Database Error during chat persistence]:', dbError);
         // Continue gracefully to AI service so student request is never dropped
@@ -328,22 +366,37 @@ export async function POST(req: NextRequest) {
               },
             });
 
-            // Persist AI Response to PostgreSQL
+            // Persist AI Response to PostgreSQL (avoid duplicate within 5s)
             if (isDbConnected && activeConversationId) {
               try {
-                await prisma.chatMessage.create({
-                  data: {
+                const lastAstMsg = await prisma.chatMessage.findFirst({
+                  where: {
                     chatSessionId: activeConversationId,
                     role: MessageRole.ASSISTANT,
-                    content: agentResult.message,
                   },
+                  orderBy: { createdAt: 'desc' },
                 });
 
-                // Touch chatSession updatedAt
-                await prisma.chatSession.update({
-                  where: { id: activeConversationId },
-                  data: { updatedAt: new Date() },
-                });
+                const isDuplicateAst =
+                  lastAstMsg &&
+                  lastAstMsg.content === agentResult.message &&
+                  Date.now() - new Date(lastAstMsg.createdAt).getTime() < 5000;
+
+                if (!isDuplicateAst) {
+                  await prisma.chatMessage.create({
+                    data: {
+                      chatSessionId: activeConversationId,
+                      role: MessageRole.ASSISTANT,
+                      content: agentResult.message,
+                    },
+                  });
+
+                  // Touch chatSession updatedAt
+                  await prisma.chatSession.update({
+                    where: { id: activeConversationId },
+                    data: { updatedAt: new Date() },
+                  });
+                }
               } catch (dbSaveError) {
                 console.error('[Database Error saving assistant response]:', dbSaveError);
               }
@@ -402,22 +455,37 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Persist AI Response to PostgreSQL
+    // Persist AI Response to PostgreSQL (avoid duplicate within 5s)
     if (isDbConnected && activeConversationId) {
       try {
-        await prisma.chatMessage.create({
-          data: {
+        const lastAstMsg = await prisma.chatMessage.findFirst({
+          where: {
             chatSessionId: activeConversationId,
             role: MessageRole.ASSISTANT,
-            content: agentResult.message,
           },
+          orderBy: { createdAt: 'desc' },
         });
 
-        // Touch chatSession updatedAt
-        await prisma.chatSession.update({
-          where: { id: activeConversationId },
-          data: { updatedAt: new Date() },
-        });
+        const isDuplicateAst =
+          lastAstMsg &&
+          lastAstMsg.content === agentResult.message &&
+          Date.now() - new Date(lastAstMsg.createdAt).getTime() < 5000;
+
+        if (!isDuplicateAst) {
+          await prisma.chatMessage.create({
+            data: {
+              chatSessionId: activeConversationId,
+              role: MessageRole.ASSISTANT,
+              content: agentResult.message,
+            },
+          });
+
+          // Touch chatSession updatedAt
+          await prisma.chatSession.update({
+            where: { id: activeConversationId },
+            data: { updatedAt: new Date() },
+          });
+        }
       } catch (dbSaveError) {
         console.error('[Database Error saving assistant response]:', dbSaveError);
       }

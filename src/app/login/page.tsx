@@ -62,7 +62,7 @@ export default function LoginPage() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
         {/* Logo and Brand */}
-        <Link href="/dashboard" className="inline-flex items-center gap-3 group">
+        <div className="inline-flex items-center gap-3 group select-none">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FBECEF] text-[#800020] border border-[#F4CDD5] shadow-xs group-hover:scale-105 transition-transform">
             <GraduationCap className="h-6 w-6" />
           </div>
@@ -72,7 +72,7 @@ export default function LoginPage() {
             </span>
             <p className="text-xs text-[#786568] font-medium">AI Student Agent</p>
           </div>
-        </Link>
+        </div>
 
         <h2 className="mt-6 text-2xl font-semibold tracking-tight text-[#2A1B1E]">
           Sign in to your study space
@@ -170,15 +170,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <Link
-            href="/dashboard"
-            className="text-xs text-[#786568] hover:text-[#2A1B1E] transition-colors"
-          >
-            ← Return to Dashboard
-          </Link>
         </div>
       </div>
     </div>

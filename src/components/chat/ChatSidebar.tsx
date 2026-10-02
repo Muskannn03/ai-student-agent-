@@ -43,7 +43,17 @@ export function ChatSidebar({
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const filtered = conversations.filter((c) =>
+  // Deduplicate conversations by id
+  const uniqueConversations = React.useMemo(() => {
+    const seen = new Set<string>();
+    return conversations.filter((c) => {
+      if (!c.id || seen.has(c.id)) return false;
+      seen.add(c.id);
+      return true;
+    });
+  }, [conversations]);
+
+  const filtered = uniqueConversations.filter((c) =>
     c.title.toLowerCase().includes(searchTerm.toLowerCase().trim())
   );
 
