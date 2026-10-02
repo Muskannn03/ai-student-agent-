@@ -217,7 +217,7 @@ export default function AssignmentsPage() {
                   <div className="mt-4 pt-3 border-t border-[#EDE1D3] flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5 text-[#786568]">
                       <Clock className="h-3.5 w-3.5 text-[#9E8B8E]" />
-                      <span className={isUrgent ? 'font-semibold text-[#D45060]' : ''}>
+                      <span suppressHydrationWarning className={isUrgent ? 'font-semibold text-[#D45060]' : ''}>
                         {formatDate(assignment.dueDate)}
                       </span>
                     </div>

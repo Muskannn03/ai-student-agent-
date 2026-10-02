@@ -175,6 +175,7 @@ export function UpcomingAssignments({
 
                 {/* Days remaining tag */}
                 <Badge
+                  suppressHydrationWarning
                   variant={deadline.isOverdue ? 'rose' : deadline.days <= 2 ? 'burgundy' : 'default'}
                   className="font-mono text-xs"
                 >

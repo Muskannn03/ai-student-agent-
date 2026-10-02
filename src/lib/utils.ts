@@ -29,8 +29,14 @@ export function formatTime(timeStr: string): string {
 }
 
 export function getDaysRemaining(dueDateStr: string): { days: number; isOverdue: boolean; label: string } {
+  if (!dueDateStr) {
+    return { days: 0, isOverdue: false, label: 'No due date' };
+  }
   const now = new Date();
   const due = new Date(dueDateStr);
+  if (isNaN(due.getTime())) {
+    return { days: 0, isOverdue: false, label: 'No due date' };
+  }
   const diffTime = due.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 

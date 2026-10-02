@@ -24,6 +24,7 @@ export function AddAssignmentModal({
   );
   const [priority, setPriority] = useState<Priority>('MEDIUM');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -32,53 +33,69 @@ export function AddAssignmentModal({
     if (!title.trim()) return;
 
     setIsSubmitting(true);
-    const newAssignment: Assignment = {
-      id: `as_${Date.now()}`,
-      title: title.trim(),
-      description: description.trim() || undefined,
-      subject: subject,
-      courseCode: subject,
-      courseName:
-        subject === 'CS301'
-          ? 'Algorithms & Complexity'
-          : subject === 'AI402'
-          ? 'Deep Learning & Neural Nets'
-          : subject === 'DS205'
-          ? 'Database Systems & SQL'
-          : 'Linear Algebra & Optimization',
-      dueDate: new Date(dueDate).toISOString(),
-      priority,
-      status: 'PENDING',
-      colorHex:
-        subject === 'CS301'
-          ? '#7FA99B'
-          : subject === 'AI402'
-          ? '#D48D8D'
-          : subject === 'DS205'
-          ? '#8CAECC'
-          : '#E0B36E',
-      totalPoints: 100,
-    };
+    setErrorMessage(null);
+
+    const subjectCourseName =
+      subject === 'CS301'
+        ? 'Algorithms & Complexity'
+        : subject === 'AI402'
+        ? 'Deep Learning & Neural Nets'
+        : subject === 'DS205'
+        ? 'Database Systems & SQL'
+        : 'Linear Algebra & Optimization';
+
+    const fallbackColorHex =
+      subject === 'CS301'
+        ? '#7FA99B'
+        : subject === 'AI402'
+        ? '#D48D8D'
+        : subject === 'DS205'
+        ? '#8CAECC'
+        : '#E0B36E';
 
     try {
-      await fetch('/api/assignments', {
+      const res = await fetch('/api/assignments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: newAssignment.title,
-          description: newAssignment.description,
-          subject: newAssignment.courseName,
-          dueDate: newAssignment.dueDate,
-          priority: newAssignment.priority,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          subject: subjectCourseName,
+          dueDate: new Date(dueDate).toISOString(),
+          priority,
         }),
       });
-    } catch (err) {
-      console.warn('Could not post to /api/assignments, using optimistic update:', err);
-    }
 
-    onAddAssignment(newAssignment);
-    setIsSubmitting(false);
-    onClose();
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to save assignment to database');
+      }
+
+      const savedAssignment: Assignment = {
+        id: json.data?.id || `as_${Date.now()}`,
+        title: json.data?.title || title.trim(),
+        description: json.data?.description || description.trim() || undefined,
+        subject: subject,
+        courseCode: json.data?.courseCode || subject,
+        courseName: json.data?.courseName || subjectCourseName,
+        dueDate: json.data?.dueDate || new Date(dueDate).toISOString(),
+        priority: (json.data?.priority as Priority) || priority,
+        status: (json.data?.status as any) || 'PENDING',
+        colorHex: json.data?.colorHex || fallbackColorHex,
+        totalPoints: 100,
+      };
+
+      onAddAssignment(savedAssignment);
+      setTitle('');
+      setDescription('');
+      setIsSubmitting(false);
+      onClose();
+    } catch (err: any) {
+      console.error('Could not save to /api/assignments:', err);
+      setErrorMessage(err.message || 'Error saving assignment. Please check your connection.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -111,6 +128,11 @@ export function AddAssignmentModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {errorMessage && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+              {errorMessage}
+            </div>
+          )}
           <div>
             <label className="text-xs font-semibold text-[#2A1B1E] block mb-1">
               Assignment Title *
