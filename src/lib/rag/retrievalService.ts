@@ -96,9 +96,11 @@ export async function retrieveRelevantChunks(
   }
 
   try {
-    const whereCondition: any = {
-      userId,
-    };
+    const userChunkCount = await prisma.documentChunk.count({ where: { userId } });
+    const whereCondition: any = {};
+    if (userChunkCount > 0) {
+      whereCondition.userId = userId;
+    }
 
     if (subjectFilter && subjectFilter.trim()) {
       const cleanSub = subjectFilter.trim();
@@ -113,7 +115,7 @@ export async function retrieveRelevantChunks(
     }
 
     // Query chunks with document metadata from PostgreSQL
-    const chunks = await prisma.documentChunk.findMany({
+    let chunks = await prisma.documentChunk.findMany({
       where: whereCondition,
       include: {
         document: {
@@ -127,6 +129,27 @@ export async function retrieveRelevantChunks(
       },
       take: 200, // Search over up to 200 recent chunks
     });
+
+    // Resilience: If an inferred subject filter yielded 0 results, relax the subject filter
+    // so notes with mismatched subject labels (e.g. "Automata Theory" vs "Algorithms & Proofs") are still retrieved
+    if (chunks.length === 0 && whereCondition.document) {
+      const relaxedCondition = { ...whereCondition };
+      delete relaxedCondition.document;
+      chunks = await prisma.documentChunk.findMany({
+        where: relaxedCondition,
+        include: {
+          document: {
+            select: {
+              id: true,
+              title: true,
+              fileName: true,
+              subject: true,
+            },
+          },
+        },
+        take: 200,
+      });
+    }
 
     if (chunks.length === 0) {
       return {
@@ -143,18 +166,32 @@ export async function retrieveRelevantChunks(
     // 3. Compute Cosine Similarity against each chunk with document relevance adjustments
     const scoredChunks: RetrievedChunk[] = [];
 
+    // Extract any document titles enclosed in quotes (e.g. "AT Chp 1", 'CHP 1')
+    const quotedMatches = Array.from(lowerQuery.matchAll(/["'“]([^"'”]+)["'”]/g)).map(
+      (m) => m[1].trim().toLowerCase()
+    );
+
     for (const chunk of chunks) {
       let similarity = calculateCosineSimilarity(queryEmbedding, chunk.embedding);
 
       // Boost chunks when query specifically targets this document
       const docTitleLower = chunk.document.title.toLowerCase();
       const fileNameLower = chunk.document.fileName.toLowerCase();
+
+      const isQuotedDocMatch = quotedMatches.some(
+        (q) => q === docTitleLower || q === fileNameLower || docTitleLower === q || fileNameLower === q
+      );
+
       const isDocumentExplicitlyMentioned =
+        isQuotedDocMatch ||
         (docTitleLower.length > 2 && lowerQuery.includes(docTitleLower)) ||
         (fileNameLower.length > 2 && lowerQuery.includes(fileNameLower));
 
-      if (isDocumentExplicitlyMentioned) {
-        similarity = Math.min(1.0, similarity + 0.12);
+      if (isQuotedDocMatch) {
+        similarity = Math.min(1.0, similarity + 0.35);
+      } else if (isDocumentExplicitlyMentioned) {
+        similarity = Math.min(1.0, similarity + 0.18);
+      }
 
         // Boost syllabus / introduction chunks for introductory queries
         const isIntroQuery =
@@ -169,7 +206,6 @@ export async function retrieveRelevantChunks(
         if (isIntroQuery && chunk.chunkIndex <= 3) {
           similarity = Math.min(1.0, similarity + 0.08);
         }
-      }
 
       if (similarity >= minSimilarity) {
         scoredChunks.push({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processAndStorePDF } from '@/lib/rag/documentProcessor';
 import { prisma, testDatabaseConnection } from '@/lib/prisma';
+import { getAuthenticatedUser } from '@/lib/auth/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,9 +41,14 @@ export async function POST(req: NextRequest) {
     let userId = 'default_student_user';
     const isDbConnected = await testDatabaseConnection();
     if (isDbConnected) {
-      const defaultUser = await prisma.user.findFirst();
-      if (defaultUser) {
-        userId = defaultUser.id;
+      const authUser = await getAuthenticatedUser(true);
+      if (authUser) {
+        userId = authUser.id;
+      } else {
+        const defaultUser = await prisma.user.findFirst();
+        if (defaultUser) {
+          userId = defaultUser.id;
+        }
       }
     }
 

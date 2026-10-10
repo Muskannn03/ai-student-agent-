@@ -73,7 +73,7 @@ export const searchNotesTool: AgentTool<SearchNotesInput, SearchNotesOutput> = {
       query: input.query,
       userId,
       topK: 6,
-      minSimilarity: 0.58,
+      minSimilarity: 0.48,
       subjectFilter: input.courseId,
     });
 

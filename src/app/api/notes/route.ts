@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, testDatabaseConnection } from '@/lib/prisma';
 import { mockNotes } from '@/lib/mock-data';
+import { getAuthenticatedUser } from '@/lib/auth/auth';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,9 +11,9 @@ export async function GET(req: NextRequest) {
     const isDbConnected = await testDatabaseConnection();
 
     if (isDbConnected) {
-      const user = await prisma.user.findFirst();
+      const user = await getAuthenticatedUser(true);
       if (user) {
-        const whereClause: any = { userId: user.id };
+        let whereClause: any = { userId: user.id };
         if (search) {
           whereClause.OR = [
             { title: { contains: search, mode: 'insensitive' } },
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
           ];
         }
 
-        const documents = await prisma.noteDocument.findMany({
+        let documents = await prisma.noteDocument.findMany({
           where: whereClause,
           include: {
             _count: {
@@ -30,6 +31,27 @@ export async function GET(req: NextRequest) {
           },
           orderBy: { createdAt: 'desc' },
         });
+
+        // If current student has no personal notes, show all workspace note documents
+        if (documents.length === 0) {
+          const fallbackWhere: any = {};
+          if (search) {
+            fallbackWhere.OR = [
+              { title: { contains: search, mode: 'insensitive' } },
+              { subject: { contains: search, mode: 'insensitive' } },
+              { fileName: { contains: search, mode: 'insensitive' } },
+            ];
+          }
+          documents = await prisma.noteDocument.findMany({
+            where: fallbackWhere,
+            include: {
+              _count: {
+                select: { chunks: true },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+          });
+        }
 
         if (documents.length > 0) {
           const formatted = documents.map((doc) => ({
