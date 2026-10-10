@@ -15,7 +15,7 @@ import {
   executeAgentTool,
   getToolByName,
 } from './toolRegistry';
-import { getAIProvider, ProviderChatMessage } from '@/lib/ai/providers';
+import { getAIProvider, ProviderChatMessage, OpenAIProvider } from '@/lib/ai/providers';
 
 /**
  * Maximum tool execution iterations permitted per user turn.
@@ -304,12 +304,18 @@ export async function runAcademicAgent(input: AgentInput): Promise<AgentOutput> 
 
   onProgress?.({ type: 'status', status: 'Thinking...' });
 
-  const provider = getAIProvider();
+  let provider = getAIProvider();
 
-  // Availability check for Ollama runtime
+  // Availability check for Ollama runtime with graceful fallback to OpenAI if configured
   const isAvailable = await provider.isAvailable();
   if (!isAvailable && provider.name === 'ollama') {
-    throw new Error('Ollama is not running. Please start Ollama and try again.');
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (openaiApiKey && openaiApiKey.trim().startsWith('sk-')) {
+      console.log('[AGENT] Ollama is offline. Seamlessly falling back to OpenAI...');
+      provider = new OpenAIProvider();
+    } else {
+      throw new Error('Ollama is not running. Please start Ollama or configure OpenAI in .env.local.');
+    }
   }
 
   // 1. Determine tool definitions available
@@ -348,19 +354,42 @@ export async function runAcademicAgent(input: AgentInput): Promise<AgentOutput> 
     const isLastAllowedStep = loopStep === MAX_TOOL_ITERATIONS;
     const isGeneratingFinalAnswer = isLastAllowedStep || (!availableTools || availableTools.length === 0 || toolChoice === 'none');
 
-    // Send request to Llama 3.2 via OllamaProvider
-    const completion = await provider.chat({
-      model: provider.chatModel,
-      messages,
-      tools: isLastAllowedStep ? undefined : availableTools,
-      toolChoice: isLastAllowedStep ? 'none' : toolChoice,
-      temperature: 0.3,
-      maxTokens: 1800,
-      onChunk: isGeneratingFinalAnswer && onProgress ? (chunk: string) => {
-        streamedViaChunk = true;
-        onProgress({ type: 'chunk', chunk });
-      } : undefined,
-    });
+    // Send request to LLM (with OpenAI fallback if Ollama encounters a network/runtime failure)
+    let completion;
+    try {
+      completion = await provider.chat({
+        model: provider.chatModel,
+        messages,
+        tools: isLastAllowedStep ? undefined : availableTools,
+        toolChoice: isLastAllowedStep ? 'none' : toolChoice,
+        temperature: 0.3,
+        maxTokens: 1800,
+        onChunk: isGeneratingFinalAnswer && onProgress ? (chunk: string) => {
+          streamedViaChunk = true;
+          onProgress({ type: 'chunk', chunk });
+        } : undefined,
+      });
+    } catch (chatError: any) {
+      const openaiApiKey = process.env.OPENAI_API_KEY;
+      if (provider.name === 'ollama' && openaiApiKey && openaiApiKey.trim().startsWith('sk-')) {
+        console.warn(`[AGENT] Ollama chat failed (${chatError.message}). Retrying with OpenAI fallback...`);
+        provider = new OpenAIProvider();
+        completion = await provider.chat({
+          model: provider.chatModel,
+          messages,
+          tools: isLastAllowedStep ? undefined : availableTools,
+          toolChoice: isLastAllowedStep ? 'none' : toolChoice,
+          temperature: 0.3,
+          maxTokens: 1800,
+          onChunk: isGeneratingFinalAnswer && onProgress ? (chunk: string) => {
+            streamedViaChunk = true;
+            onProgress({ type: 'chunk', chunk });
+          } : undefined,
+        });
+      } else {
+        throw chatError;
+      }
+    }
 
     const toolCalls = completion.toolCalls;
 
@@ -556,7 +585,7 @@ export async function runAcademicAgent(input: AgentInput): Promise<AgentOutput> 
     .replace(/passwords?/gi, 'credentials')
     .replace(/postgres:\/\/[^\s]+/gi, '[REDACTED_URI]');
 
-  onProgress?.({ type: 'done', status: 'Complete' });
+  onProgress?.({ type: 'status', status: 'Complete' });
 
   return {
     message: sanitizedMessage,

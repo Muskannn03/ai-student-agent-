@@ -159,92 +159,105 @@ function ChatContainer() {
             const trimmed = line.trim();
             if (!trimmed || !trimmed.startsWith('data:')) continue;
             const jsonStr = trimmed.replace(/^data:\s*/, '');
+            let event: any;
             try {
-              const event = JSON.parse(jsonStr);
+              event = JSON.parse(jsonStr);
+            } catch {
+              continue;
+            }
 
-              if (event.type === 'status' && event.status) {
-                setAgentStatus(event.status);
-              } else if (event.type === 'tool_call' && event.tool) {
-                if (!executedToolCalls.some((t) => t.name === event.tool)) {
-                  executedToolCalls.push({ name: event.tool });
-                }
-              } else if (event.type === 'chunk' && event.chunk) {
-                accumulatedText += event.chunk;
-
-                if (!hasAppendedAssistant) {
-                  hasAppendedAssistant = true;
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: assistantId,
-                      role: 'assistant',
-                      content: accumulatedText,
-                      createdAt: new Date().toISOString(),
-                      toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : undefined,
-                      isStreaming: true,
-                    },
-                  ]);
-                } else {
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === assistantId
-                        ? {
-                            ...m,
-                            content: accumulatedText,
-                            toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : m.toolCalls,
-                          }
-                        : m
-                    )
-                  );
-                }
-              } else if (event.type === 'done') {
-                if (event.conversationId && event.conversationId !== activeConversationId) {
-                  setActiveConversationId(event.conversationId);
-                  fetchConversations();
-                }
-
-                const finalContent = event.message || accumulatedText;
-                const finalTools = event.toolCalls || executedToolCalls;
-                const finalSources = event.sources || [];
-
-                if (!hasAppendedAssistant) {
-                  hasAppendedAssistant = true;
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: assistantId,
-                      role: 'assistant',
-                      content: finalContent,
-                      createdAt: new Date().toISOString(),
-                      toolCalls: finalTools.length > 0 ? finalTools : undefined,
-                      sources: finalSources.length > 0 ? finalSources : undefined,
-                      isStreaming: false,
-                    },
-                  ]);
-                } else {
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === assistantId
-                        ? {
-                            ...m,
-                            content: finalContent,
-                            toolCalls: finalTools.length > 0 ? finalTools : undefined,
-                            sources: finalSources.length > 0 ? finalSources : undefined,
-                            isStreaming: false,
-                          }
-                        : m
-                    )
-                  );
-                }
-              } else if (event.type === 'error') {
-                throw new Error(event.error || 'An error occurred during response streaming.');
+            if (event.type === 'status' && event.status) {
+              setAgentStatus(event.status);
+            } else if (event.type === 'tool_call' && event.tool) {
+              if (!executedToolCalls.some((t) => t.name === event.tool)) {
+                executedToolCalls.push({ name: event.tool });
               }
-            } catch (parseErr) {
-              if (parseErr instanceof Error && parseErr.message.includes('An error occurred')) {
-                throw parseErr;
+            } else if (event.type === 'chunk' && event.chunk) {
+              accumulatedText += event.chunk;
+
+              if (!hasAppendedAssistant) {
+                hasAppendedAssistant = true;
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: assistantId,
+                    role: 'assistant',
+                    content: accumulatedText,
+                    createdAt: new Date().toISOString(),
+                    toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : undefined,
+                    isStreaming: true,
+                  },
+                ]);
+              } else {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantId
+                      ? {
+                          ...m,
+                          content: accumulatedText,
+                          toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : m.toolCalls,
+                        }
+                      : m
+                  )
+                );
               }
+            } else if (event.type === 'done') {
+              if (event.conversationId && event.conversationId !== activeConversationId) {
+                setActiveConversationId(event.conversationId);
+                fetchConversations();
+              }
+
+              const finalContent = event.message || accumulatedText;
+              const finalTools = event.toolCalls || executedToolCalls;
+              const finalSources = event.sources || [];
+
+              if (!hasAppendedAssistant) {
+                hasAppendedAssistant = true;
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: assistantId,
+                    role: 'assistant',
+                    content: finalContent,
+                    createdAt: new Date().toISOString(),
+                    toolCalls: finalTools.length > 0 ? finalTools : undefined,
+                    sources: finalSources.length > 0 ? finalSources : undefined,
+                    isStreaming: false,
+                  },
+                ]);
+              } else {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantId
+                      ? {
+                          ...m,
+                          content: finalContent,
+                          toolCalls: finalTools.length > 0 ? finalTools : undefined,
+                          sources: finalSources.length > 0 ? finalSources : undefined,
+                          isStreaming: false,
+                        }
+                      : m
+                  )
+                );
+              }
+            } else if (event.type === 'error') {
+              throw new Error(event.error || 'An error occurred during response streaming.');
             }
           }
+        }
+
+        if (accumulatedText.trim() && !hasAppendedAssistant) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: assistantId,
+              role: 'assistant',
+              content: accumulatedText,
+              createdAt: new Date().toISOString(),
+              toolCalls: executedToolCalls.length > 0 ? [...executedToolCalls] : undefined,
+              isStreaming: false,
+            },
+          ]);
         }
       } else {
         // Fallback for standard non-streaming JSON responses

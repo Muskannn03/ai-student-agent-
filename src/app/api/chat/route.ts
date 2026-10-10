@@ -419,10 +419,7 @@ export async function POST(req: NextRequest) {
           } catch (streamError: any) {
             console.error('[API /api/chat Stream Error]:', streamError);
             const rawMsg = streamError instanceof Error ? streamError.message : 'Error in AI generation';
-            const isOllamaDown = rawMsg.includes('Ollama is not running');
-            const cleanError = isOllamaDown
-              ? 'Ollama is not running. Please start Ollama and try again.'
-              : 'An unexpected error occurred while communicating with the AI agent.';
+            const cleanError = rawMsg || 'An unexpected error occurred while communicating with the AI agent.';
 
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify({ type: 'error', error: cleanError })}\n\n`)

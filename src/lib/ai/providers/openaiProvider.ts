@@ -83,6 +83,34 @@ export class OpenAIProvider implements AIProvider {
         return { role: 'user' as const, content: m.content || '' };
       });
 
+    const isStreamingRequested =
+      typeof options.onChunk === 'function' &&
+      (!options.tools || options.tools.length === 0 || options.toolChoice === 'none');
+
+    if (isStreamingRequested) {
+      const stream = await client.chat.completions.create({
+        model: modelToUse,
+        messages: formattedMessages,
+        temperature: options.temperature ?? 0.5,
+        max_tokens: options.maxTokens ?? 1800,
+        stream: true,
+      });
+
+      let fullContent = '';
+      for await (const chunk of stream) {
+        const textDelta = chunk.choices[0]?.delta?.content || '';
+        if (textDelta) {
+          fullContent += textDelta;
+          options.onChunk?.(textDelta);
+        }
+      }
+
+      return {
+        message: fullContent,
+        model: modelToUse,
+      };
+    }
+
     const completion = await client.chat.completions.create({
       model: modelToUse,
       messages: formattedMessages,

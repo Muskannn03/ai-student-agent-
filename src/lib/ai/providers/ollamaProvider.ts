@@ -11,12 +11,13 @@ export class OllamaProvider implements AIProvider {
   readonly baseUrl: string;
   readonly chatModel: string;
   readonly embeddingModel: string;
-  private readonly defaultTimeoutMs = 45000;
+  private readonly defaultTimeoutMs: number;
 
   constructor() {
     this.baseUrl = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
     this.chatModel = process.env.OLLAMA_CHAT_MODEL || 'llama3.2';
     this.embeddingModel = process.env.OLLAMA_EMBEDDING_MODEL || 'nomic-embed-text';
+    this.defaultTimeoutMs = process.env.OLLAMA_TIMEOUT_MS ? parseInt(process.env.OLLAMA_TIMEOUT_MS, 10) : 120000;
   }
 
   /**
