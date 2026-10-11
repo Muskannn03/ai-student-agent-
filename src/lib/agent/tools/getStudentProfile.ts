@@ -54,6 +54,14 @@ export const getStudentProfileTool: AgentTool<GetStudentProfileInput, GetStudent
               careerGoals: true,
             },
           },
+          subjects: {
+            select: {
+              name: true,
+            },
+            orderBy: {
+              name: 'asc',
+            },
+          },
         },
       });
 
@@ -79,6 +87,7 @@ export const getStudentProfileTool: AgentTool<GetStudentProfileInput, GetStudent
           semester: user.studentProfile?.semester ?? null,
           skills: user.studentProfile?.skills ?? [],
           careerGoals: user.studentProfile?.careerGoals ?? null,
+          enrolledSubjects: user.subjects ? user.subjects.map((s) => s.name) : [],
         },
       };
     } catch (dbError: any) {

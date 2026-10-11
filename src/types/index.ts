@@ -16,6 +16,11 @@ export interface StudentProfile {
   major: string;
   semester: number;
   gpa: number;
+  college?: string;
+  classLevel?: string;
+  careerGoals?: string;
+  skills?: string[];
+  enrolledSubjects?: string[];
 }
 
 export interface Course {

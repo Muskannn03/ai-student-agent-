@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Sparkles, Calendar, GraduationCap, Flame } from 'lucide-react';
+import { Sparkles, Calendar, GraduationCap, Flame, ArrowUpRight } from 'lucide-react';
 import { StudentProfile } from '@/types';
 
 interface WelcomeSectionProps {
@@ -48,13 +49,41 @@ export function WelcomeSection({
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2A1B1E]">
-            Welcome back, <span className="text-[#800020]">{firstName}</span>!
-          </h1>
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2A1B1E]">
+              Welcome back, <span className="text-[#800020]">{firstName}</span>!
+            </h1>
+            <Link
+              href="/student-details"
+              className="text-xs font-semibold text-[#800020] hover:text-[#5C0017] hover:underline flex items-center gap-1 transition-colors"
+            >
+              <span>Edit Academic Details</span>
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
 
           <p className="text-xs sm:text-sm text-[#786568]">
-            Your calm academic workspace for coursework, lecture notes, and study scheduling.
+            {student.careerGoals
+              ? `Working towards: ${student.careerGoals} • Personalized for ${student.major}`
+              : 'Your calm academic workspace for coursework, lecture notes, and study scheduling.'}
           </p>
+
+          {/* Enrolled Courses Badges */}
+          {student.enrolledSubjects && student.enrolledSubjects.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[10px] font-semibold text-[#786568] uppercase tracking-wider mr-1">
+                Enrolled Subjects:
+              </span>
+              {student.enrolledSubjects.map((sub, i) => (
+                <span
+                  key={i}
+                  className="rounded-md bg-[#FAF5EE] px-2 py-0.5 text-[10px] font-medium text-[#5C4549] border border-[#EDE1D3]"
+                >
+                  {sub}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Study Streak & Academic Standing */}

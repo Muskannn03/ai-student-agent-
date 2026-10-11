@@ -52,8 +52,8 @@ export default function SignUpPage() {
         throw new Error(data.error || 'Failed to create account.');
       }
 
-      // Successful registration
-      router.push('/dashboard');
+      // Successful registration -> Navigate to Student Details onboarding
+      router.push('/student-details?onboarding=true');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed.');

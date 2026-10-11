@@ -47,11 +47,31 @@ export function NotesPage() {
   // Upload Form State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [docTitle, setDocTitle] = useState('');
-  const [docSubject, setDocSubject] = useState('Algorithms & Proofs (CS301)');
+  const [docSubject, setDocSubject] = useState('Data Structures & Algorithms');
+  const [enrolledSubjects, setEnrolledSubjects] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStep, setUploadStep] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchSubjects() {
+      try {
+        const res = await fetch('/api/subjects');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const names = json.data.map((s: any) => s.name);
+          setEnrolledSubjects(names);
+          if (names.length > 0) {
+            setDocSubject(names[0]);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load enrolled subjects for notes:', err);
+      }
+    }
+    fetchSubjects();
+  }, []);
 
   const fetchNotes = async () => {
     setIsLoading(true);
@@ -250,11 +270,21 @@ export function NotesPage() {
                   disabled={isUploading}
                   className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3.5 py-2.5 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
                 >
-                  <option value="Algorithms & Proofs (CS301)">Algorithms & Proofs (CS301)</option>
-                  <option value="Deep Learning Architecture (AI402)">Deep Learning Architecture (AI402)</option>
-                  <option value="Database Systems (DS205)">Database Systems (DS205)</option>
-                  <option value="Operating Systems & Concurrency">Operating Systems & Concurrency</option>
-                  <option value="General Academic Notes">General Academic Notes</option>
+                  {enrolledSubjects.length > 0 ? (
+                    enrolledSubjects.map((sub) => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="Algorithms & Proofs (CS301)">Algorithms & Proofs (CS301)</option>
+                      <option value="Deep Learning Architecture (AI402)">Deep Learning Architecture (AI402)</option>
+                      <option value="Database Systems (DS205)">Database Systems (DS205)</option>
+                      <option value="Operating Systems & Concurrency">Operating Systems & Concurrency</option>
+                      <option value="General Academic Notes">General Academic Notes</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>

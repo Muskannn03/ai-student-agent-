@@ -203,6 +203,7 @@ export async function POST(req: NextRequest) {
       semester?: number | null;
       skills?: string[];
       careerGoals?: string | null;
+      enrolledSubjects?: string[];
     } = {
       name: 'Alex Rivera',
       course: 'Computer Science & AI',
@@ -235,6 +236,11 @@ export async function POST(req: NextRequest) {
         }
 
         if (user) {
+          const userSubjects = await prisma.subject.findMany({
+            where: { userId: user.id },
+            select: { name: true },
+          });
+
           studentProfileContext = {
             userId: user.id,
             email: user.email,
@@ -244,6 +250,7 @@ export async function POST(req: NextRequest) {
             semester: user.studentProfile?.semester,
             skills: user.studentProfile?.skills || [],
             careerGoals: user.studentProfile?.careerGoals,
+            enrolledSubjects: userSubjects.map((s) => s.name),
           };
         }
 
@@ -360,6 +367,7 @@ export async function POST(req: NextRequest) {
                 course: studentProfileContext.course,
                 semester: studentProfileContext.semester,
                 college: studentProfileContext.college,
+                enrolledSubjects: studentProfileContext.enrolledSubjects,
               },
               onProgress: (event) => {
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
@@ -449,6 +457,7 @@ export async function POST(req: NextRequest) {
         course: studentProfileContext.course,
         semester: studentProfileContext.semester,
         college: studentProfileContext.college,
+        enrolledSubjects: studentProfileContext.enrolledSubjects,
       },
     });
 

@@ -9,6 +9,7 @@ export interface AgentContext {
   course?: string | null;
   semester?: number | null;
   college?: string | null;
+  enrolledSubjects?: string[];
 }
 
 export interface AgentTool<TInput = any, TOutput = any> {
@@ -121,6 +122,7 @@ export interface StudentProfileData {
   semester: number | null;
   skills: string[];
   careerGoals: string | null;
+  enrolledSubjects?: string[];
 }
 
 export interface GetStudentProfileOutput {

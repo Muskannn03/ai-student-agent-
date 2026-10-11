@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -12,6 +13,11 @@ export async function GET() {
       });
     }
 
+    const subjects = await prisma.subject.findMany({
+      where: { userId: user.id },
+      select: { name: true },
+    });
+
     return NextResponse.json({
       authenticated: true,
       user: {
@@ -22,6 +28,8 @@ export async function GET() {
         semester: user.studentProfile?.semester || 1,
         college: user.studentProfile?.college || 'University',
         skills: user.studentProfile?.skills || [],
+        careerGoals: user.studentProfile?.careerGoals || undefined,
+        subjects: subjects.map((s) => s.name),
       },
     });
   } catch (error) {

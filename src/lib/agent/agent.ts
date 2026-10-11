@@ -187,8 +187,13 @@ function buildSystemPrompt(context: AgentInput['context']): string {
   const studentName = context.studentName || 'Student';
   const course = context.course || 'Computer Science';
   const semester = context.semester ? `, Semester ${context.semester}` : '';
+  const subjectsText =
+    context.enrolledSubjects && context.enrolledSubjects.length > 0
+      ? `\nENROLLED SUBJECTS:\n${context.enrolledSubjects.map((s) => `- ${s}`).join('\n')}\nWhen explaining concepts, generating revision plans, or structuring study schedules, prioritize these enrolled subjects.`
+      : '';
 
   return `You are AISA (AI Student Agent), an intelligent academic co-pilot for ${studentName} (${course}${semester}).
+${subjectsText}
 
 TOOL SYSTEM CAPABILITIES:
 You have access to tools to help the student manage their academic life:

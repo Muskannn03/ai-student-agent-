@@ -17,7 +17,8 @@ export function AddAssignmentModal({
   onAddAssignment,
 }: AddAssignmentModalProps) {
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState('CS301');
+  const [subject, setSubject] = useState('Data Structures & Algorithms');
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState(
     new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -25,6 +26,28 @@ export function AddAssignmentModal({
   const [priority, setPriority] = useState<Priority>('MEDIUM');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Fetch student's enrolled subjects
+  React.useEffect(() => {
+    async function fetchSubjects() {
+      try {
+        const res = await fetch('/api/subjects');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const names = json.data.map((s: any) => s.name);
+          setAvailableSubjects(names);
+          if (names.length > 0) {
+            setSubject(names[0]);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load enrolled subjects for assignment modal:', err);
+      }
+    }
+    if (isOpen) {
+      fetchSubjects();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -35,23 +58,8 @@ export function AddAssignmentModal({
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    const subjectCourseName =
-      subject === 'CS301'
-        ? 'Algorithms & Complexity'
-        : subject === 'AI402'
-        ? 'Deep Learning & Neural Nets'
-        : subject === 'DS205'
-        ? 'Database Systems & SQL'
-        : 'Linear Algebra & Optimization';
-
-    const fallbackColorHex =
-      subject === 'CS301'
-        ? '#7FA99B'
-        : subject === 'AI402'
-        ? '#D48D8D'
-        : subject === 'DS205'
-        ? '#8CAECC'
-        : '#E0B36E';
+    const subjectCourseName = subject.trim() || 'General Coursework';
+    const fallbackColorHex = '#800020';
 
     try {
       const res = await fetch('/api/assignments', {
@@ -158,10 +166,21 @@ export function AddAssignmentModal({
                 onChange={(e) => setSubject(e.target.value)}
                 className="w-full rounded-xl border border-[#EDE1D3] bg-white px-3 py-2.5 text-xs text-[#2A1B1E] focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]/30"
               >
-                <option value="CS301">CS301 - Algorithms & Complexity</option>
-                <option value="AI402">AI402 - Deep Learning & Neural Nets</option>
-                <option value="DS205">DS205 - Database Systems & SQL</option>
-                <option value="MATH210">MATH210 - Linear Algebra</option>
+                {availableSubjects.length > 0 ? (
+                  availableSubjects.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
+                    <option value="Operating Systems">Operating Systems</option>
+                    <option value="Database Management Systems">Database Management Systems</option>
+                    <option value="Computer Networks">Computer Networks</option>
+                    <option value="General Coursework">General Coursework</option>
+                  </>
+                )}
               </select>
             </div>
 

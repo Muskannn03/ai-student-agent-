@@ -63,6 +63,7 @@ export function Sidebar({ onCloseMobile }: SidebarProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Student Details', href: '/student-details', icon: GraduationCap, badge: 'Setup' },
     { name: 'AI Tutor Chat', href: '/chat', icon: Sparkles, badge: 'Agent' },
     { name: 'Study Plan', href: '/study-plan', icon: CalendarRange },
     { name: 'Assignments', href: '/assignments', icon: CheckSquare },
@@ -143,18 +144,22 @@ export function Sidebar({ onCloseMobile }: SidebarProps) {
       <div className="p-4 border-t border-[#EDE1D3]">
         {user ? (
           <div className="flex items-center justify-between rounded-xl bg-[#FAF5EE] p-2.5 border border-[#EDE1D3]">
-            <div className="flex items-center gap-2.5 min-w-0">
+            <Link
+              href="/student-details"
+              title="Edit Student Details & Subjects"
+              className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity"
+            >
               <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F3E6D5] font-semibold text-[#5C0017] text-xs border border-[#E2CEB9]">
                 {initials}
                 <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-white bg-[#538E6E]" />
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-xs font-semibold text-[#2A1B1E]">{user.name}</p>
                 <p className="truncate text-[10px] text-[#786568]">
                   {user.course || 'Student'} • Sem {user.semester || 1}
                 </p>
               </div>
-            </div>
+            </Link>
 
             <button
               onClick={handleLogout}

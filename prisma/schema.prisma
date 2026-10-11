@@ -65,6 +65,7 @@ model User {
 
   // Relationships
   studentProfile StudentProfile?
+  studentDetail  StudentDetail?
   assignments    Assignment[]
   subjects       Subject[]
   studySessions  StudySession[]
@@ -89,6 +90,29 @@ model StudentProfile {
   careerGoals String?
 
   @@map("student_profiles")
+}
+
+// ------------------------------------------
+// 2b. StudentDetail Model
+// Dedicated table in database for student details
+// ------------------------------------------
+model StudentDetail {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName        String?
+  className       String?  // Class / Year (e.g. "Class 12", "2nd Year (Sophomore)")
+  course          String?  // Degree / Course (e.g. "B.Tech Computer Science & AI")
+  semester        Int?     // Current semester
+  college         String?  // School / College / University name
+  subjects        String[] @default([]) // Array of enrolled subjects
+  skills          String[] @default([]) // Skills & focus areas
+  careerGoals     String?  // Target career / Dream job role
+  dailyStudyHours Int      @default(3)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("student_details")
 }
 
 // ------------------------------------------
